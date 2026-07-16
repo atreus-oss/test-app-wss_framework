@@ -837,6 +837,15 @@
     transition: all 0.15s ease;
   }
   .btn-secondary-sm:hover { border-color: var(--text-dim); color: var(--text); }
+  .scan-select {
+    font-family: var(--font-body);
+    font-size: 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg-panel);
+    color: var(--text);
+    padding: 9px 12px;
+  }
 
   .scan-empty {
     border: 1px dashed var(--line);
@@ -865,6 +874,13 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 14px;
+    align-content: start;
+  }
+  .real-results-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(480px, 520px);
+    gap: 18px;
+    align-items: start;
   }
 
   .net-card {
@@ -872,9 +888,10 @@
     border: 1px solid var(--line);
     border-radius: 14px;
     padding: 20px;
-    cursor: pointer;
+    cursor: default;
     transition: border-color 0.15s ease, transform 0.15s ease;
     position: relative;
+    min-height: 320px;
   }
   .net-card:hover { border-color: var(--text-faint); transform: translateY(-2px); }
   .net-card.selected { border-color: var(--severity-low); }
@@ -888,23 +905,26 @@
   }
   .net-card-ssid {
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 600;
     word-break: break-word;
+    line-height: 1.45;
   }
   .net-card-score {
     font-family: var(--font-display);
-    font-size: 22px;
+    font-size: 15.5px;
     font-weight: 700;
     flex-shrink: 0;
+    line-height: 1.45;
   }
   .net-card-meta {
-    font-size: 12px;
-    color: var(--text-faint);
+    font-size: 15px;
+    color: var(--text-dim);
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 12px;
+    line-height: 1.55;
   }
   .net-card-badge {
     display: inline-block;
@@ -915,28 +935,245 @@
     padding: 4px 10px;
     border-radius: 100px;
   }
-  .net-card-anomaly {
+  .technical-toggle {
+    margin-top: 2px;
+    border: 1px solid rgba(111, 227, 166, 0.35);
+    background: rgba(111, 227, 166, 0.08);
+    color: var(--severity-low);
+    cursor: pointer;
+    font-size: 14.5px;
+    padding: 9px 14px;
+    text-transform: none;
+    letter-spacing: 0;
+    border-radius: 8px;
+  }
+  .technical-toggle:hover {
+    border-color: rgba(111, 227, 166, 0.7);
+    background: rgba(111, 227, 166, 0.14);
+  }
+  .technical-toggle:focus-visible {
+    outline: 2px solid var(--severity-low);
+    outline-offset: 3px;
+  }
+  .net-card-observation {
     margin-top: 10px;
-    font-size: 11.5px;
-    color: var(--severity-critical);
+    font-size: 14px;
+    color: var(--text-dim);
     display: flex;
     align-items: center;
     gap: 6px;
-    font-family: var(--font-mono);
+    line-height: 1.5;
+  }
+  .action-summary {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 12px 0;
+    background: rgba(255,255,255,0.025);
+  }
+  .action-summary-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.45;
+    margin-bottom: 6px;
+  }
+  .action-summary-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .action-pill {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 8px;
+    color: var(--text-dim);
+    font-size: 12.5px;
+  }
+  .alternatives-toggle {
+    margin-top: 8px;
+    border: none;
+    background: transparent;
+    color: var(--severity-low);
+    cursor: pointer;
+    font-size: 13.5px;
+    padding: 4px 0;
+  }
+  .alternatives-toggle:focus-visible {
+    outline: 2px solid var(--severity-low);
+    outline-offset: 3px;
+  }
+  .alternatives-list[hidden] { display: none; }
+  .alternatives-list {
+    margin-top: 8px;
+    padding-left: 18px;
+    color: var(--text-dim);
+    font-size: 13.5px;
+    line-height: 1.5;
   }
 
   .detail-panel {
-    margin-top: 28px;
+    position: fixed;
+    top: 72px;
+    right: 0;
+    bottom: 0;
+    width: min(580px, 94vw);
+    max-height: none;
+    overflow: hidden;
     background: var(--bg-panel);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 32px;
+    border-left: 1px solid var(--line-strong);
+    border-radius: 0;
+    box-shadow: -24px 0 60px rgba(0,0,0,0.35);
+    padding: 0;
+    z-index: 60;
   }
   .detail-panel-empty {
     color: var(--text-faint);
     font-size: 13.5px;
     text-align: center;
     padding: 20px 0;
+  }
+  .detail-close {
+    border: 1px solid var(--line-strong);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .detail-close:hover { border-color: var(--text-faint); }
+  .detail-close:focus-visible {
+    outline: 2px solid var(--severity-low);
+    outline-offset: 3px;
+  }
+  .detail-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .detail-drawer-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 20px;
+  }
+  .detail-drawer-title {
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+  .detail-drawer-meta {
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.45;
+    margin-top: 5px;
+  }
+  .detail-score-main {
+    font-family: var(--font-display);
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--severity-low);
+    margin-top: 12px;
+  }
+  .detail-classification {
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+  .detail-simple-status {
+    margin-top: 4px;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--text-dim);
+  }
+  .detail-drawer-body {
+    height: calc(100vh - 72px - 96px);
+    overflow-y: auto;
+    padding: 16px 20px 24px;
+  }
+  .detail-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+  .detail-tab {
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 7px 10px;
+  }
+  .detail-tab[aria-selected="true"] {
+    color: var(--severity-low);
+    border-color: rgba(111, 227, 166, 0.55);
+    background: rgba(111, 227, 166, 0.1);
+  }
+  .detail-tab:focus-visible {
+    outline: 2px solid var(--severity-low);
+    outline-offset: 3px;
+  }
+  .detail-tab-panel[hidden] { display: none; }
+  .detail-kv {
+    display: grid;
+    grid-template-columns: minmax(130px, 0.42fr) minmax(0, 1fr);
+    gap: 8px 12px;
+    align-items: start;
+  }
+  .detail-kv dt {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .detail-kv dd {
+    color: var(--text);
+    font-size: 14.5px;
+    line-height: 1.45;
+    margin: 0;
+    word-break: break-word;
+  }
+  .radio-card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 10px;
+    background: rgba(255,255,255,0.025);
+  }
+  .detail-section-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.45;
+    margin: 0 0 12px;
+  }
+  .detail-line {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.55;
+    margin-top: 7px;
+  }
+  @media (max-width: 1060px) {
+    .real-results-layout { display: block; }
+    .detail-panel {
+      inset: 0;
+      width: auto;
+      top: 0;
+      z-index: 80;
+    }
+    .detail-drawer-body {
+      height: calc(100vh - 96px);
+    }
   }
 
   </style>
@@ -1117,8 +1354,8 @@
             </div>
             <div class="toggle-row">
               <div class="toggle-text">
-                SSID duplicado detectado
-                <span class="sub">Mismo SSID, BSSID distinto al registrado</span>
+                Condicion observable
+                <span class="sub">Requiere verificacion tecnica segun regla metodologica</span>
               </div>
               <div class="switch" id="anomaly-switch"></div>
             </div>
@@ -1294,15 +1531,31 @@
         <div class="scan-toolbar">
           <button class="btn-scan" id="btn-scan">
             <span class="spinner"></span>
-            <span class="scan-label" id="scan-label">Escanear redes</span>
+            <span class="scan-label" id="scan-label">Escanear redes de este equipo</span>
           </button>
+          <button class="btn-secondary-sm" id="btn-import">Cargar archivo TXT</button>
+          <button class="btn-secondary-sm" id="btn-demo-source">Ver demostración</button>
           <div class="scan-status">
             <span id="platform-pill" class="pf-pill">Verificando plataforma…</span>
+            <span id="source-pill" class="pf-pill" style="display:none;">Origen no definido</span>
+            <label class="pf-pill" id="profile-label" style="display:none;">
+              ¿Cuál es su relación con esta red?
+              <select id="user-profile" class="scan-select">
+                <option value="NETWORK_OWNER">Pertenece a mi organización</option>
+                <option value="NETWORK_USER">Solo deseo conectarme</option>
+                <option value="GENERAL" selected>No estoy seguro</option>
+              </select>
+            </label>
+            <label class="pf-pill" id="anon-label" style="display:none;">
+              <input type="checkbox" id="export-anon" style="margin-right:6px;"> Anonimizar
+            </label>
             <button class="btn-secondary-sm" id="btn-export" style="display:none;">Exportar JSON</button>
+            <button class="btn-secondary-sm" id="btn-export-pdf" style="display:none;">Exportar PDF</button>
           </div>
         </div>
 
         <div id="scan-error-box"></div>
+        <div id="export-status-box"></div>
 
         <div id="scan-empty" class="scan-empty">
           <div class="se-icon">◌</div>
@@ -1311,9 +1564,10 @@
             desde este equipo y calcular su severidad técnica.</div>
         </div>
 
-        <div id="network-grid" class="network-grid" style="display:none;"></div>
-
-        <div id="detail-panel" class="detail-panel" style="display:none;"></div>
+        <div class="real-results-layout">
+          <div id="network-grid" class="network-grid" style="display:none;"></div>
+          <aside id="detail-panel" class="detail-panel" style="display:none;" aria-live="polite"></aside>
+        </div>
       </div>
     </section>
   </div><!-- /#view-real -->
@@ -1338,8 +1592,18 @@
       { max: 2.5, key: 'low',      label: 'BAJO',     color: '#6FE3A6' },
       { max: 5.0, key: 'medium',   label: 'MEDIO',    color: '#F2C45C' },
       { max: 7.5, key: 'high',     label: 'ALTO',     color: '#FF9156' },
-      { max: 10.01, key: 'critical', label: 'CRÍTICO', color: '#FF5640' },
+      { max: 10.01, key: 'critical', label: 'CRITICO', color: '#FF5640' },
     ];
+
+    const CLASSIFICATION_PRESENTATION = {
+      BAJO: { label: 'BAJO', simpleStatus: 'Configuración adecuada', color: '#6FE3A6' },
+      MEDIO: { label: 'MEDIO', simpleStatus: 'Puede mejorar', color: '#F2C45C' },
+      ALTO: { label: 'ALTO', simpleStatus: 'Requiere atención', color: '#FF9156' },
+      CRITICO: { label: 'CRITICO', simpleStatus: 'Protección insuficiente', color: '#FF5640' },
+      'CRÍTICO': { label: 'CRITICO', simpleStatus: 'Protección insuficiente', color: '#FF5640' },
+      NO_EVALUABLE: { label: 'NO_EVALUABLE', simpleStatus: 'No se pudo completar la evaluación', color: '#9BA7B4' },
+      SECURITY_PROFILE_MISMATCH: { label: 'Revisión técnica', simpleStatus: 'Requiere verificación técnica', color: '#F2C45C' },
+    };
 
     const PRESETS = {
       e1:  { au: '0.1', en: '0.1', rssi: -60, anomaly: false, ssidTag: 'WPA3 · CCMP' },
@@ -1365,6 +1629,20 @@
 
     function severityFor(score) {
       return SEVERITY.find(s => score <= s.max) || SEVERITY[SEVERITY.length - 1];
+    }
+
+    function presentationForClassification(classification) {
+      return CLASSIFICATION_PRESENTATION[classification] || CLASSIFICATION_PRESENTATION.NO_EVALUABLE;
+    }
+
+    function presentationForNetwork(net) {
+      if (!net || net.evaluation_status !== 'COMPLETE' || net.wss_score == null) {
+        return CLASSIFICATION_PRESENTATION.NO_EVALUABLE;
+      }
+      if (net.observation_status === 'SECURITY_PROFILE_MISMATCH') {
+        return CLASSIFICATION_PRESENTATION.SECURITY_PROFILE_MISMATCH;
+      }
+      return presentationForClassification(net.classification);
     }
 
     // ---------- State refs ----------
@@ -1556,12 +1834,45 @@
     const tabs = document.querySelectorAll('.app-tab');
     const views = document.querySelectorAll('.view');
 
+    function activateAppView(viewId) {
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.view === viewId));
+      views.forEach(v => v.classList.toggle('active', v.id === viewId));
+    }
+
+    function scrollToDemoSection(sectionId) {
+      activateAppView('view-demo');
+      requestAnimationFrame(() => {
+        const target = document.getElementById(sectionId);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    function scrollToRealView() {
+      activateAppView('view-real');
+      requestAnimationFrame(() => {
+        const target = document.getElementById('view-real');
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
     tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        views.forEach(v => v.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.view).classList.add('active');
+      tab.addEventListener('click', () => activateAppView(tab.dataset.view));
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', event => {
+        const sectionId = link.getAttribute('href').slice(1);
+        if (['como-funciona', 'calculadora', 'clasificacion', 'beneficios'].includes(sectionId)) {
+          event.preventDefault();
+          scrollToDemoSection(sectionId);
+        }
+      });
+    });
+
+    document.querySelectorAll('.nav-cta').forEach(link => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        scrollToRealView();
       });
     });
 
@@ -1577,9 +1888,20 @@
       const networkGrid = document.getElementById('network-grid');
       const detailPanel = document.getElementById('detail-panel');
       const btnExport = document.getElementById('btn-export');
+      const btnExportPdf = document.getElementById('btn-export-pdf');
+      const btnImport = document.getElementById('btn-import');
+      const btnDemoSource = document.getElementById('btn-demo-source');
+      const sourcePill = document.getElementById('source-pill');
+      const exportAnon = document.getElementById('export-anon');
+      const anonLabel = document.getElementById('anon-label');
+      const profileLabel = document.getElementById('profile-label');
+      const userProfile = document.getElementById('user-profile');
+      const exportStatusBox = document.getElementById('export-status-box');
 
       let lastResults = [];
       let selectedIndex = null;
+      let activeDetailButton = null;
+      let currentMetadata = null;
 
       function waitForPywebview(callback, attemptsLeft) {
         attemptsLeft = attemptsLeft === undefined ? 40 : attemptsLeft;
@@ -1591,6 +1913,8 @@
           platformPill.textContent = 'API no disponible';
           platformPill.classList.add('unavailable');
           btnScan.disabled = true;
+          btnImport.disabled = true;
+          btnDemoSource.disabled = true;
         }
       }
 
@@ -1616,40 +1940,330 @@
         scanErrorBox.innerHTML = '';
       }
 
+      function showExportStatus(response) {
+        exportStatusBox.innerHTML = `
+          <div class="scan-error" style="border-color:rgba(111,227,166,0.35); background:rgba(111,227,166,0.08); color:var(--text);">
+            <b>Reporte guardado correctamente.</b><br>
+            <span>${escapeHtml(response.saved_path)}</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;">
+              <button type="button" class="btn-secondary-sm" id="btn-open-export">Abrir archivo</button>
+              <button type="button" class="btn-secondary-sm" id="btn-show-export">Mostrar en carpeta</button>
+            </div>
+          </div>
+        `;
+        document.getElementById('btn-open-export').addEventListener('click', () => {
+          window.pywebview.api.open_exported_file(response.saved_path).then(result => {
+            if (!result.ok) showError(result.error || 'No se pudo abrir el archivo.');
+          });
+        });
+        document.getElementById('btn-show-export').addEventListener('click', () => {
+          window.pywebview.api.show_exported_file_in_folder(response.saved_path).then(result => {
+            if (!result.ok) showError(result.error || 'No se pudo mostrar la carpeta.');
+          });
+        });
+      }
+
+      function showExportCancelled(button, label) {
+        exportStatusBox.innerHTML = `
+          <div class="detail-line">La exportación fue cancelada.</div>
+        `;
+        button.textContent = label;
+      }
+
+      function isComplete(net) {
+        return net && net.evaluation_status === 'COMPLETE' && net.wss_score != null;
+      }
+
+      function formatScore(net, fallback) {
+        return isComplete(net) ? Number(net.wss_score).toFixed(1) : fallback;
+      }
+
+      function formatScoreLocal(net, fallback) {
+        return formatScore(net, fallback).replace('.', ',');
+      }
+
+      const RULE_NAMES = {
+        'REC-01': 'REC-01 — WPA3 con CCMP',
+        'REC-02': 'REC-02 — WPA2 con CCMP/AES',
+        'REC-03': 'REC-03 — WPA/TKIP',
+        'REC-04': 'REC-04 — WEP',
+        'REC-05': 'REC-05 — Red abierta o sin cifrado',
+        'REC-06': 'REC-06 — Parámetro no interpretado',
+        'REC-07': 'REC-07 — Configuraciones diferentes bajo el mismo SSID',
+      };
+
+      const SOURCE_TYPE_LABELS = {
+        LIVE_SCAN: 'Escaneo real',
+        FILE_IMPORT: 'Archivo TXT cargado',
+        DEMO: 'Datos de demostración',
+      };
+
+      const EVALUATION_STATUS_LABELS = {
+        COMPLETE: 'Evaluación completa',
+        INCOMPLETE: 'Evaluación incompleta',
+      };
+
+      const OBSERVATION_STATUS_LABELS = {
+        SINGLE_BSSID: 'Una radio observada',
+        MULTI_RADIO_OBSERVED: 'Varias radios observadas',
+        MULTI_AP_OBSERVED: 'Varios puntos de acceso observados',
+        SECURITY_PROFILE_MISMATCH: 'Configuraciones diferentes',
+        HIDDEN_SSID: 'SSID oculto observado individualmente',
+        BASELINE_MISMATCH: 'Diferencia con línea base autorizada',
+      };
+
+      const ACTION_LABELS = {
+        PRIMARY: 'Acción principal recomendada',
+        ALTERNATIVE: 'Alternativa inmediata',
+        DEFINITIVE: 'Solución definitiva',
+        COMPLEMENTARY: 'Complementaria',
+      };
+
+      const TARGET_USER_LABELS = {
+        NETWORK_OWNER: 'Propietario o responsable de la red',
+        NETWORK_USER: 'Usuario que desea conectarse',
+        TECHNICAL_RESPONSIBLE: 'Responsable técnico',
+        GENERAL: 'Recomendación general',
+      };
+
+      const LEVEL_LABELS = {
+        LOW: 'Bajo',
+        MEDIUM: 'Medio',
+        HIGH: 'Alto',
+        NO_COST: 'Sin costo',
+        UNKNOWN: 'Desconocido',
+        IMMEDIATE: 'Inmediato',
+        SHORT_TERM: 'Corto plazo',
+        PLANNED: 'Planificado',
+      };
+
+      function ruleDisplayName(ruleId) {
+        if (!ruleId) return 's/d';
+        return RULE_NAMES[ruleId] || ruleId;
+      }
+
+      function translateValue(value, dictionary) {
+        return dictionary[value] || value || 's/d';
+      }
+
+      function actionLabel(value) {
+        return ACTION_LABELS[value] || value || 'Acción';
+      }
+
+      function levelLabel(value) {
+        return LEVEL_LABELS[value] || value || 's/d';
+      }
+
+      function targetUserLabel(value) {
+        return TARGET_USER_LABELS[value] || value || 's/d';
+      }
+
+      function formatLocalDateTime(value) {
+        if (!value) return 's/d';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+      }
+
+      function sourceText(metadata) {
+        if (!metadata) return 'Origen no definido';
+        if (metadata.source_type === 'LIVE_SCAN') return 'Escaneo real';
+        if (metadata.source_filename === 'es_unknown.txt') return metadata.source_label || 'Archivo de prueba con parámetros desconocidos';
+        if (metadata.source_type === 'FILE_IMPORT') return 'Archivo cargado: ' + (metadata.source_filename || 'TXT');
+        if (metadata.source_type === 'DEMO') return 'Datos de demostracion';
+        return metadata.source_label || metadata.source_type || 'Origen no definido';
+      }
+
+      function setSource(metadata) {
+        sourcePill.style.display = metadata ? 'inline-flex' : 'none';
+        sourcePill.textContent = sourceText(metadata);
+        sourcePill.classList.toggle('unavailable', !!(metadata && metadata.synthetic_data));
+        sourcePill.classList.toggle('ready', !!(metadata && !metadata.synthetic_data));
+      }
+
       function renderCard(net, index) {
-        const sev = severityFor(net.wss_score);
+        const complete = isComplete(net);
+        const presentation = presentationForNetwork(net);
         const card = document.createElement('div');
         card.className = 'net-card';
         card.dataset.index = index;
+        card.style.borderLeft = `4px solid ${presentation.color}`;
 
-        const anomalyLine = net.anomaly
-          ? `<div class="net-card-anomaly">⚠ SSID duplicado detectado (BSSID distinto)</div>`
+        const observationText = observationLabel(net);
+        const observationLine = observationText
+          ? `<div class="net-card-observation">${escapeHtml(observationText)}</div>`
           : '';
-
         card.innerHTML = `
           <div class="net-card-top">
             <div class="net-card-ssid">${escapeHtml(net.ssid)}</div>
-            <div class="net-card-score" style="color:${sev.color};">${net.wss_score.toFixed(1)}</div>
+            <div class="net-card-score" style="color:${presentation.color}; font-size:13px;">${escapeHtml(presentation.simpleStatus)}</div>
+          </div>
+          <div class="net-card-badge" style="background:${presentation.color}20; color:${presentation.color}; border:1px solid ${presentation.color}55;">
+            ${escapeHtml(presentation.label)}
           </div>
           <div class="net-card-meta">
-            <span>${escapeHtml(net.auth_raw)}</span>
-            <span>·</span>
-            <span>${escapeHtml(net.cipher_raw)}</span>
-            <span>·</span>
-            <span>${net.signal_pct != null ? net.signal_pct + '%' : 's/d'}</span>
+            <span>${escapeHtml(net.simple_explanation || 'No hay explicación disponible.')}</span>
           </div>
-          <span class="net-card-badge" style="background:${sev.color}20; color:${sev.color};">${net.classification}</span>
-          ${anomalyLine}
+          ${renderActionSummary(net, index)}
+          <div class="net-card-meta">
+            <span><b>Prioridad:</b> ${escapeHtml(net.priority || 'No definida')}</span>
+          </div>
+          <div class="net-card-meta">
+            <span><b>Limitación:</b> ${escapeHtml(net.limitations || 'Esta evaluación no comprobó todos los controles de seguridad.')}</span>
+          </div>
+          ${observationLine}
+          <button type="button" class="net-card-badge technical-toggle" aria-expanded="false" aria-controls="detail-panel">
+            Ver detalles técnicos
+          </button>
         `;
 
-        card.addEventListener('click', () => {
+        const toggle = card.querySelector('.technical-toggle');
+        const alternativesToggle = card.querySelector('.alternatives-toggle');
+        if (alternativesToggle) {
+          alternativesToggle.addEventListener('click', () => {
+            const list = card.querySelector('#' + alternativesToggle.getAttribute('aria-controls'));
+            const expanded = alternativesToggle.getAttribute('aria-expanded') === 'true';
+            alternativesToggle.setAttribute('aria-expanded', String(!expanded));
+            if (list) list.hidden = expanded;
+          });
+        }
+        toggle.addEventListener('click', () => {
           document.querySelectorAll('.net-card').forEach(c => c.classList.remove('selected'));
           card.classList.add('selected');
           selectedIndex = index;
-          renderDetail(net);
+          openDetailPanel(net, toggle);
         });
 
         return card;
+      }
+
+      function resetDetailButtons() {
+        document.querySelectorAll('.technical-toggle').forEach(button => {
+          button.setAttribute('aria-expanded', 'false');
+          button.textContent = 'Ver detalles técnicos';
+        });
+      }
+
+      function openDetailPanel(net, button) {
+        resetDetailButtons();
+        activeDetailButton = button;
+        button.setAttribute('aria-expanded', 'true');
+        button.textContent = 'Detalles técnicos abiertos';
+        const complete = isComplete(net);
+        const presentation = presentationForNetwork(net);
+        detailPanel.innerHTML = `
+          <div class="detail-drawer-header">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+              <div>
+                <div class="detail-drawer-title">${escapeHtml(net.ssid)}</div>
+                <div class="detail-score-main" style="color:${presentation.color};">${escapeHtml(formatScoreLocal(net, 'Sin puntaje'))}</div>
+                <div class="detail-classification" style="color:${presentation.color};">${escapeHtml(complete ? 'Clasificación técnica: ' + presentation.label : 'Evaluación incompleta')}</div>
+                <div class="detail-simple-status" style="color:${presentation.color};">${escapeHtml(presentation.simpleStatus)}</div>
+              </div>
+              <button type="button" class="detail-close" id="detail-close-btn">Cerrar</button>
+            </div>
+          </div>
+          <div class="detail-drawer-body" id="detail-drawer-body">
+            ${renderDetail(net)}
+          </div>
+        `;
+        detailPanel.style.display = 'block';
+        document.getElementById('detail-close-btn').addEventListener('click', closeDetailPanel);
+        setupDetailTabs();
+        activateDetailTab('summary');
+        const panelBody = document.getElementById('detail-drawer-body');
+        panelBody.scrollTop = 0;
+      }
+
+      function setupDetailTabs() {
+        const tabs = Array.from(detailPanel.querySelectorAll('.detail-tab'));
+        tabs.forEach((tab, index) => {
+          tab.addEventListener('click', () => activateDetailTab(tab.dataset.tab));
+          tab.addEventListener('keydown', event => {
+            if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            let nextIndex = index;
+            if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+            if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+            if (event.key === 'Home') nextIndex = 0;
+            if (event.key === 'End') nextIndex = tabs.length - 1;
+            tabs[nextIndex].focus();
+            activateDetailTab(tabs[nextIndex].dataset.tab);
+          });
+        });
+      }
+
+      function activateDetailTab(tabName) {
+        detailPanel.querySelectorAll('.detail-tab').forEach(tab => {
+          const isActive = tab.dataset.tab === tabName;
+          tab.setAttribute('aria-selected', String(isActive));
+          tab.tabIndex = isActive ? 0 : -1;
+        });
+        detailPanel.querySelectorAll('.detail-tab-panel').forEach(panel => {
+          panel.hidden = panel.dataset.panel !== tabName;
+        });
+      }
+
+      function closeDetailPanel() {
+        detailPanel.style.display = 'none';
+        detailPanel.innerHTML = '';
+        resetDetailButtons();
+        const buttonToFocus = activeDetailButton;
+        activeDetailButton = null;
+        document.querySelectorAll('.net-card').forEach(c => c.classList.remove('selected'));
+        selectedIndex = null;
+        if (buttonToFocus) buttonToFocus.focus();
+      }
+
+      function detailTabs() {
+        return `
+          <div class="detail-tabs" role="tablist" aria-label="Secciones técnicas">
+            <button type="button" class="detail-tab" role="tab" data-tab="summary" id="tab-summary" aria-controls="panel-summary" aria-selected="true">Resumen</button>
+            <button type="button" class="detail-tab" role="tab" data-tab="parameters" id="tab-parameters" aria-controls="panel-parameters" aria-selected="false" tabindex="-1">Parámetros</button>
+            <button type="button" class="detail-tab" role="tab" data-tab="radios" id="tab-radios" aria-controls="panel-radios" aria-selected="false" tabindex="-1">Radios</button>
+            <button type="button" class="detail-tab" role="tab" data-tab="traceability" id="tab-traceability" aria-controls="panel-traceability" aria-selected="false" tabindex="-1">Trazabilidad avanzada</button>
+          </div>
+        `;
+      }
+
+      function detailKeyValues(rows) {
+        return `
+          <dl class="detail-kv">
+            ${rows.map(row => `<dt>${escapeHtml(row[0])}</dt><dd>${escapeHtml(row[1] == null || row[1] === '' ? 's/d' : row[1])}</dd>`).join('')}
+          </dl>
+        `;
+      }
+
+      function detailActions(net) {
+        const actions = visibleActions(net);
+        if (!actions.length) return '<div class="detail-line">Sin acciones priorizadas disponibles.</div>';
+        return actions.map(action => `
+          <div class="radio-card">
+            <div class="detail-section-title">${escapeHtml(actionLabel(action.action_type))}</div>
+            ${detailKeyValues([
+              ['Acción', action.title],
+              ['Descripción', action.description],
+              ['Esfuerzo', levelLabel(action.effort_level)],
+              ['Beneficio esperado', levelLabel(action.benefit_level)],
+              ['Costo estimado', levelLabel(action.cost_level)],
+              ['Plazo', levelLabel(action.time_horizon)],
+              ['Destinatario', targetUserLabel(action.target_user)],
+              ['Orden', action.display_order],
+            ])}
+          </div>
+        `).join('');
+      }
+
+      function resetDetailButtons() {
+        document.querySelectorAll('.technical-toggle').forEach(button => {
+          button.setAttribute('aria-expanded', 'false');
+          button.textContent = 'Ver detalles técnicos';
+        });
       }
 
       function escapeHtml(str) {
@@ -1658,43 +2272,184 @@
         return div.innerHTML;
       }
 
-      function renderDetail(net) {
-        const sev = severityFor(net.wss_score);
-        detailPanel.style.display = 'block';
-        detailPanel.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:24px; flex-wrap:wrap;">
-            <div>
-              <div style="font-family:var(--font-mono); font-size:13px; color:var(--text-faint); margin-bottom:6px;">
-                ${escapeHtml(net.bssid)}
-              </div>
-              <div style="font-family:var(--font-display); font-size:22px; font-weight:600;">
-                ${escapeHtml(net.ssid)}
-              </div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-family:var(--font-display); font-size:36px; font-weight:700; color:${sev.color};">
-                ${net.wss_score.toFixed(1)}
-              </div>
-              <div class="net-card-badge" style="background:${sev.color}20; color:${sev.color};">${net.classification}</div>
-            </div>
-          </div>
+      function observationLabel(net) {
+        if (net.infrastructure_note) return net.infrastructure_note;
+        if (net.observation_status === 'MULTI_RADIO_OBSERVED') return 'Se observaron varias radios compatibles con una red de doble banda.';
+        if (net.observation_status === 'MULTI_AP_OBSERVED') return 'Se observaron varios puntos de acceso con el mismo nombre. Esto puede ser normal en redes mesh, repetidores o instalaciones con varios equipos.';
+        if (net.observation_status === 'SECURITY_PROFILE_MISMATCH') return 'Configuraciones diferentes: requiere verificación técnica';
+        if (net.observation_status === 'HIDDEN_SSID') return 'SSID oculto observado individualmente';
+        return '';
+      }
 
-          <div class="vector-box" style="margin-top:24px;">
-            <div class="vb-label">Vector WSS</div>
-            <div class="vb-value">${escapeHtml(net.wss_vector)}</div>
-          </div>
+      function radioCountLabel(net) {
+        const count = net.observed_bssid_count || 1;
+        return count === 1 ? '1 radio observada' : count + ' radios observadas';
+      }
 
-          <div class="breakdown">
-            ${detailBar('AU · Autenticación', net.au, net.auth_raw)}
-            ${detailBar('EN · Cifrado', net.en, net.cipher_raw)}
-            ${detailBar('EX · Exposición', net.ex, (net.rssi_dbm != null ? net.rssi_dbm + ' dBm' : 'señal ' + net.signal_pct + '%'))}
-            ${detailBar('AN · Anomalía', net.an, net.anomaly ? 'SSID duplicado' : 'sin anomalía')}
-            ${detailBar('BM · Benchmark', net.bm, net.bm_label)}
+      function visibleActions(net) {
+        return (net.prioritized_actions || [])
+          .filter(action => ['PRIMARY', 'ALTERNATIVE', 'DEFINITIVE'].includes(action.action_type))
+          .sort((a, b) => a.display_order - b.display_order)
+          .slice(0, 3);
+      }
+
+      function actionMeta(action) {
+        return `
+          <div class="action-summary-meta">
+            <span class="action-pill">Esfuerzo: ${escapeHtml(levelLabel(action.effort_level))}</span>
+            <span class="action-pill">Beneficio: ${escapeHtml(levelLabel(action.benefit_level))}</span>
+            <span class="action-pill">Costo: ${escapeHtml(levelLabel(action.cost_level))}</span>
+            <span class="action-pill">Plazo: ${escapeHtml(levelLabel(action.time_horizon))}</span>
+            <span class="action-pill">Destinatario: ${escapeHtml(targetUserLabel(action.target_user))}</span>
           </div>
         `;
       }
 
+      function renderActionSummary(net, index) {
+        const actions = visibleActions(net);
+        if (!actions.length) return '';
+        const primary = actions[0];
+        const alternatives = actions.slice(1);
+        const alternativesId = `alternatives-${index}`;
+        return `
+          <div class="action-summary">
+            <div class="action-summary-title">${escapeHtml(actionLabel(primary.action_type))}</div>
+            <div>${escapeHtml(primary.title)}</div>
+            ${actionMeta(primary)}
+            ${alternatives.length ? `
+              <button type="button" class="alternatives-toggle" aria-expanded="false" aria-controls="${alternativesId}">
+                Ver otras alternativas
+              </button>
+              <ul id="${alternativesId}" class="alternatives-list" hidden>
+                ${alternatives.map(action => `
+                  <li><b>${escapeHtml(actionLabel(action.action_type))}:</b> ${escapeHtml(action.title)} ${actionMeta(action)}</li>
+                `).join('')}
+              </ul>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      function anDetailMessage(net) {
+        if (net.an === 0) return 'No se identificó una condición anómala.';
+        return net.observation_message || 'Condición anómala registrada.';
+      }
+
+      function buildDisplayGroups(results) {
+        const groups = new Map();
+        results.forEach(net => {
+          const key = net.hidden_ssid ? net.bssid : net.ssid;
+          if (!groups.has(key)) {
+            groups.set(key, { ...net, group_items: [], observed_bands: [], observed_bssid_count: 0 });
+          }
+          const group = groups.get(key);
+          group.group_items.push(net);
+          group.observed_bssid_count = group.group_items.length;
+          const bands = new Set(group.observed_bands || []);
+          (net.observed_bands || []).forEach(b => bands.add(b));
+          if (net.band) bands.add(net.band);
+          group.observed_bands = [...bands];
+          if (net.observation_status === 'SECURITY_PROFILE_MISMATCH') {
+            group.observation_status = net.observation_status;
+            group.observation_message = net.observation_message;
+            group.requires_technical_review = true;
+          }
+        });
+        return [...groups.values()];
+      }
+
+      function renderDetail(net) {
+        const complete = isComplete(net);
+        const presentation = presentationForNetwork(net);
+        const unknownFields = (net.unknown_fields || []).join(', ') || 'No informado';
+        return `
+          ${detailTabs()}
+          <section class="detail-tab-panel" role="tabpanel" id="panel-summary" aria-labelledby="tab-summary" data-panel="summary">
+            <h3 class="detail-section-title">Resumen técnico</h3>
+            ${detailKeyValues([
+              ['Estado sencillo', presentation.simpleStatus],
+              ['Score técnico', formatScoreLocal(net, 'Sin puntaje')],
+              ['Clasificación técnica', complete ? presentation.label : 'Evaluación incompleta'],
+              ['Hallazgo', net.finding_title || 'Hallazgo no definido'],
+              ['Explicación', net.simple_explanation || 'No hay explicación disponible.'],
+              ['Recomendación', net.recommended_action || 'Solicitar revisión técnica.'],
+              ['Prioridad', net.priority || 'No definida'],
+              ['Limitaciones de la evaluación', net.limitations || 'Esta evaluación no comprobó todos los controles de seguridad.'],
+              ['Observación de infraestructura', observationLabel(net) || 'Sin observación adicional.'],
+              ['Regla aplicada', ruleDisplayName(net.recommendation_rule_id)],
+              ['Parámetros no interpretados', complete ? 'No aplica' : unknownFields],
+            ])}
+            <h3 class="detail-section-title" style="margin-top:16px;">Acciones priorizadas</h3>
+            ${detailActions(net)}
+          </section>
+
+          <section class="detail-tab-panel" role="tabpanel" id="panel-parameters" aria-labelledby="tab-parameters" data-panel="parameters" hidden>
+            <h3 class="detail-section-title">Parámetros observados</h3>
+            ${detailKeyValues([
+              ['Autenticación original', net.auth_raw],
+              ['Autenticación normalizada', net.auth_key],
+              ['Cifrado original', net.cipher_raw],
+              ['Cifrado normalizado', net.cipher_key],
+              ['Señal', net.signal_pct ? net.signal_pct + '%' : 's/d'],
+              ['Canal', net.channel],
+              ['Banda', net.band],
+              ['Tipo de radio', net.radio_type],
+              ['MFP', net.mfp_required],
+              ['Score WSS', formatScore(net, 'Sin score')],
+              ['Clasificación técnica', complete ? presentation.label : 'NO_EVALUABLE'],
+              ['Vector WSS', complete ? net.wss_vector : 'No se pudo completar la evaluación'],
+              ['AU', net.au],
+              ['EN', net.en],
+              ['EX', net.ex],
+              ['AN', net.an],
+              ['BM', net.bm_label || net.bm],
+            ])}
+          </section>
+
+          <section class="detail-tab-panel" role="tabpanel" id="panel-radios" aria-labelledby="tab-radios" data-panel="radios" hidden>
+            <h3 class="detail-section-title">Radios o puntos de acceso</h3>
+            ${technicalList(net)}
+          </section>
+
+          <section class="detail-tab-panel" role="tabpanel" id="panel-traceability" aria-labelledby="tab-traceability" data-panel="traceability" hidden>
+            <h3 class="detail-section-title">Trazabilidad avanzada</h3>
+            ${detailKeyValues([
+              ['Regla aplicada', ruleDisplayName(net.recommendation_rule_id)],
+              ['Versión de la regla', net.recommendation_rule_version],
+              ['Tipo de origen', translateValue(net.source_type, SOURCE_TYPE_LABELS)],
+              ['Descripción del origen', net.source_label],
+              ['Archivo procesado', net.source_filename],
+              ['Versión del motor', net.engine_version],
+              ['Estado de la evaluación', translateValue(net.evaluation_status, EVALUATION_STATUS_LABELS)],
+              ['Estado de la infraestructura observada', translateValue(net.observation_status, OBSERVATION_STATUS_LABELS)],
+              ['Fecha de procesamiento', formatLocalDateTime(net.processed_at)],
+              ['Perfil de usuario seleccionado', targetUserLabel(net.selected_user_profile)],
+            ])}
+          </section>
+        `;
+      }
+
+      function technicalList(net) {
+        const items = net.group_items || [net];
+        return `
+          ${items.map(item => `
+            <div class="radio-card">
+              ${detailKeyValues([
+                ['BSSID', item.bssid],
+                ['Señal', item.signal_pct ? item.signal_pct + '%' : 's/d'],
+                ['Banda', item.band],
+                ['Canal', item.channel],
+                ['Tipo de radio', item.radio_type],
+                ['Autenticación', `${item.auth_raw || 's/d'} (${item.auth_key || 's/d'})`],
+                ['Cifrado', `${item.cipher_raw || 's/d'} (${item.cipher_key || 's/d'})`],
+              ])}
+            </div>
+          `).join('')}
+        `;
+      }
+
       function detailBar(label, value, sub) {
+        if (value == null) return '';
         let color = '#6FE3A6';
         if (value > 0.75) color = '#FF5640';
         else if (value > 0.45) color = '#FF9156';
@@ -1710,44 +2465,59 @@
         `;
       }
 
-      function renderResults(results) {
+      function renderResults(results, metadata) {
         lastResults = results;
+        currentMetadata = metadata || null;
+        setSource(metadata);
         networkGrid.innerHTML = '';
 
         if (!results.length) {
           scanEmpty.style.display = 'block';
           networkGrid.style.display = 'none';
-          detailPanel.style.display = 'none';
+          closeDetailPanel();
           btnExport.style.display = 'none';
+          btnExportPdf.style.display = 'none';
+          anonLabel.style.display = 'none';
+          profileLabel.style.display = 'none';
           return;
         }
 
         scanEmpty.style.display = 'none';
         networkGrid.style.display = 'grid';
         btnExport.style.display = 'inline-block';
+        btnExportPdf.style.display = 'inline-block';
+        anonLabel.style.display = 'inline-flex';
+        profileLabel.style.display = 'inline-flex';
 
-        results.forEach((net, i) => networkGrid.appendChild(renderCard(net, i)));
+        const displayItems = buildDisplayGroups(results);
+        displayItems.forEach((net, i) => networkGrid.appendChild(renderCard(net, i)));
 
-        // Seleccionar automaticamente la red mas severa (ya viene ordenada por score desc.)
-        networkGrid.firstChild.classList.add('selected');
-        renderDetail(results[0]);
-        selectedIndex = 0;
+        closeDetailPanel();
       }
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && detailPanel.style.display !== 'none') {
+          closeDetailPanel();
+        }
+      });
 
       function setLoading(isLoading) {
         btnScan.classList.toggle('loading', isLoading);
         btnScan.disabled = isLoading;
-        scanLabel.textContent = isLoading ? 'Escaneando…' : 'Escanear redes';
+        btnImport.disabled = isLoading;
+        btnDemoSource.disabled = isLoading;
+        scanLabel.textContent = isLoading ? 'Escaneando…' : 'Escanear redes de este equipo';
       }
 
       btnScan.addEventListener('click', () => {
         clearError();
+        exportStatusBox.innerHTML = '';
         setLoading(true);
 
         window.pywebview.api.scan_networks().then(response => {
           setLoading(false);
           if (response.ok) {
-            renderResults(response.results);
+            renderResults(response.results, response.metadata);
           } else {
             showError(response.error || 'Error desconocido durante el escaneo.');
             // Si el escaneo real no esta disponible (p.ej. no-Windows), ofrecemos modo demo
@@ -1758,6 +2528,44 @@
         }).catch(err => {
           setLoading(false);
           showError('No se pudo comunicar con el motor de escaneo: ' + err);
+        });
+      });
+
+      btnImport.addEventListener('click', () => {
+        clearError();
+        exportStatusBox.innerHTML = '';
+        setLoading(true);
+
+        window.pywebview.api.import_txt_file().then(response => {
+          setLoading(false);
+          if (response.ok) {
+            renderResults(response.results, response.metadata);
+          } else if (!response.cancelled) {
+            showError(response.error || 'No se pudo cargar el archivo TXT.');
+          }
+        }).catch(err => {
+          setLoading(false);
+          showError('No se pudo comunicar con el importador: ' + err);
+        });
+      });
+
+      btnDemoSource.addEventListener('click', () => {
+        clearError();
+        exportStatusBox.innerHTML = '';
+        window.pywebview.api.scan_networks_demo().then(response => {
+          if (response.ok) renderResults(response.results, response.metadata);
+          else showError(response.error || 'No se pudo cargar la demostración.');
+        });
+      });
+
+      userProfile.addEventListener('change', () => {
+        clearError();
+        window.pywebview.api.update_recommendation_profile(userProfile.value).then(response => {
+          if (response.ok) {
+            renderResults(response.results, response.metadata || currentMetadata);
+          } else {
+            showError(response.error || 'No se pudieron actualizar las recomendaciones.');
+          }
         });
       });
 
@@ -1772,20 +2580,40 @@
         btn.addEventListener('click', () => {
           clearError();
           window.pywebview.api.scan_networks_demo().then(response => {
-            renderResults(response.results);
+            renderResults(response.results, response.metadata);
           });
         });
         scanErrorBox.appendChild(btn);
       }
 
       btnExport.addEventListener('click', () => {
-        window.pywebview.api.export_json(JSON.stringify(lastResults)).then(res => {
+        window.pywebview.api.export_json(exportAnon.checked).then(res => {
           if (res.ok) {
-            btnExport.textContent = 'Exportado: ' + res.filename;
-            setTimeout(() => { btnExport.textContent = 'Exportar JSON'; }, 2500);
+            btnExport.textContent = 'Exportar JSON';
+            showExportStatus(res);
+          } else if (res.cancelled) {
+            showExportCancelled(btnExport, 'Exportar JSON');
           } else {
             showError(res.error || 'No se pudo exportar el archivo.');
           }
+        });
+      });
+
+      btnExportPdf.addEventListener('click', () => {
+        btnExportPdf.textContent = 'Generando PDF...';
+        window.pywebview.api.export_pdf(exportAnon.checked).then(res => {
+          if (res.ok) {
+            btnExportPdf.textContent = 'Exportar PDF';
+            showExportStatus(res);
+          } else if (res.cancelled) {
+            showExportCancelled(btnExportPdf, 'Exportar PDF');
+          } else {
+            btnExportPdf.textContent = 'Exportar PDF';
+            showError(res.error || 'No se pudo exportar el PDF.');
+          }
+        }).catch(() => {
+          btnExportPdf.textContent = 'Exportar PDF';
+          showError('No se pudo exportar el PDF.');
         });
       });
 
