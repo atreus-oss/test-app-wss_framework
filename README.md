@@ -4,7 +4,7 @@ Aplicación de escritorio para Windows que evalúa, de forma **pasiva** (sin ata
 
 ---
 
-## 🟢 ¿Qué hace esta app?
+## 🟢 Para perfiles no técnicos: ¿Qué hace esta app?
 
 Pensala como un **chequeo de salud para tu red Wi-Fi**, parecido al de un mecánico que revisa el auto sin desarmarlo: la app "escucha" lo que tu punto de acceso ya está anunciando al aire (nombre de la red, tipo de protección, señal) y te dice, en palabras simples, qué tan bien o mal protegida está.
 
@@ -30,7 +30,7 @@ Si querés guardar el resultado, el botón **"Exportar PDF"** te deja elegir dó
 
 ---
 
-## 🔧 Para perfiles técnicos: qué es y cómo está construido
+## 🔧 Para perfiles técnicos: ¿Qué es y cómo está construido?
 
 ### Componentes
 
@@ -47,28 +47,28 @@ El proyecto separa estrictamente el cálculo técnico de la interpretación para
 netsh (Windows)  o  archivo .txt importado
         │
         ▼
-┌─────────────────────┐
+┌──────────────────────┐
 │   wss_engine.py      │  Parsea, normaliza y calcula el modelo WSS
-│                       │  (AU, EN, EX, AN, BM → score → clasificación)
+│                      │  (AU, EN, EX, AN, BM → score → clasificación)
 └──────────┬───────────┘
            ▼
-┌─────────────────────┐
+┌──────────────────────┐
 │ recommendation_      │  Traduce cada resultado normalizado a
-│ engine.py             │  estado sencillo, hallazgo, acción priorizada
-│                       │  y buenas prácticas (según perfil de usuario)
+│ engine.py            │  estado sencillo, hallazgo, acción priorizada
+│                      │  y buenas prácticas (según perfil de usuario)
 └──────────┬───────────┘
            ▼
-┌─────────────────────┐
-│   app.py              │  Orquesta: agrupa redes lógicas (por SSID),
-│   (clase WssApi)      │  anonimiza si se pide, genera JSON/PDF,
-│                       │  expone todo a JavaScript vía pywebview
+┌──────────────────────┐
+│   app.py             │  Orquesta: agrupa redes lógicas (por SSID),
+│   (clase WssApi)     │  anonimiza si se pide, genera JSON/PDF,
+│                      │  expone todo a JavaScript vía pywebview
 └──────────┬───────────┘
            ▼
-┌─────────────────────┐
-│   index.html          │  Renderiza vista sencilla + drawer técnico
-│                       │  con pestañas (Resumen / Parámetros / Radios /
-│                       │  Trazabilidad avanzada)
-└─────────────────────┘
+┌──────────────────────┐
+│   index.html         │  Renderiza vista sencilla + drawer técnico
+│                      │  con pestañas (Resumen / Parámetros / Radios /
+│                      │  Trazabilidad avanzada)
+└──────────────────────┘
 ```
 
 `recommendation_engine.py` **nunca modifica** la fórmula WSS, los pesos ni los umbrales de clasificación definidos en la tesis — solo consume el resultado ya calculado y lo traduce.
