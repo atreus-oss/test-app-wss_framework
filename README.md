@@ -4,7 +4,7 @@ Aplicación de escritorio para Windows que evalúa, de forma **pasiva** (sin ata
 
 ---
 
-## 🟢 Para quien no es técnico: ¿qué hace esta app?
+## 🟢 ¿Qué hace esta app?
 
 Pensala como un **chequeo de salud para tu red Wi-Fi**, parecido al de un mecánico que revisa el auto sin desarmarlo: la app "escucha" lo que tu punto de acceso ya está anunciando al aire (nombre de la red, tipo de protección, señal) y te dice, en palabras simples, qué tan bien o mal protegida está.
 
