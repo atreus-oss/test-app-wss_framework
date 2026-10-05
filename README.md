@@ -1,234 +1,220 @@
-# WSS Framework — App de Escritorio
+# WSS Framework: evaluación de configuraciones Wi-Fi observables
 
-Aplicación de escritorio para Windows que evalúa, de forma **pasiva** (sin ataques, sin interceptar tráfico), qué tan expuesta está una red Wi-Fi según los parámetros que su propio punto de acceso ya transmite públicamente. Es la implementación práctica del modelo **WSS (Wireless Security Score)** desarrollado en la tesis *"Sistema automatizado de evaluación de seguridad Wi-Fi con validación experimental controlada"*.
+Aplicación de escritorio en Python para Windows desarrollada como parte de la tesis **«Sistema automatizado de evaluación de seguridad Wi-Fi con validación experimental controlada en una organización de Asunción, Paraguay, 2026»**, de José Luis Cabrera Oviedo y Arturo Rafael Ferreira Cardozo, Facultad de Ingeniería de la Universidad del Norte.
 
----
+El proyecto integra captura o importación de parámetros Wi-Fi, normalización, puntuación, recomendaciones y reportes. El modelo final de la investigación se denomina **Wireless Severity Score (WSS) 2.0** y estima **severidad técnica relativa** mediante autenticación y cifrado. Un puntaje menor indica menor severidad dentro del modelo; no garantiza que una red sea segura.
 
-## 🟢 Para perfiles no técnicos: ¿Qué hace esta app?
+## Estado del repositorio y correspondencia con la tesis
 
-Pensala como un **chequeo de salud para tu red Wi-Fi**, parecido al de un mecánico que revisa el auto sin desarmarlo: la app "escucha" lo que tu punto de acceso ya está anunciando al aire (nombre de la red, tipo de protección, señal) y te dice, en palabras simples, qué tan bien o mal protegida está.
+**La implementación publicada en `main` todavía utiliza la formulación preliminar de cinco componentes. Este README documenta el modelo final de la tesis y la diferencia con el código publicado; su actualización no migra la aplicación a WSS 2.0.**
 
-**Lo que la app hace:**
--  Revisa las redes Wi-Fi visibles desde tu computadora.
--  Te dice, con un semáforo de colores, si cada red está bien protegida o necesita atención.
--  Te explica **por qué** con una frase entendible, no con jerga técnica.
--  Te sugiere una acción concreta ("qué hacer"), ajustada a si sos quien administra la red o solo querés conectarte.
--  Te arma un reporte en PDF que podés guardar y compartir con quien resuelva temas técnicos en tu organización.
+La revisión del 5 de octubre de 2026 tomó como base el commit [`0d1bc90`](https://github.com/atreus-oss/test-app-wss_framework/commit/0d1bc90e0c9cabbc709baeca26d2a3187e56b786). La tesis identifica la rama `sprint-05-wss-v2-au-en` como su versión sincronizada; esa rama no aparecía entre las ramas remotas publicadas durante la revisión.
 
-**Lo que la app NO hace (y es importante saberlo):**
--  No "hackea" ni ataca ninguna red — solo mira información pública que cualquier dispositivo cercano ya puede ver.
--  No confirma que exista un ataque en curso — si algo se ve raro, te avisa que conviene revisarlo, no te dice "te están atacando".
--  No es un reemplazo de una auditoría de seguridad completa hecha por un profesional.
-
-### Cómo usarla en 3 pasos
-
-1. Abrí la aplicación (doble clic en `WSS-Framework.exe`, o ver instalación más abajo si tenés Python).
-2. Andá a la pestaña **"Mis Redes"** y presioná **Escanear**.
-3. Mirá el color de cada tarjeta: 🟢 verde está bien, 🟡 amarillo puede mejorar, 🟠 naranja necesita atención, 🔴 rojo requiere acción inmediata. Tocá **"Ver detalles técnicos"** solo si querés profundizar.
-
-Si querés guardar el resultado, el botón **"Exportar PDF"** te deja elegir dónde guardarlo, con un nombre y fecha automáticos.
-
----
-
-## 🔧 Para perfiles técnicos: ¿Qué es y cómo está construido?
-
-### Componentes
-
-La app combina dos experiencias en una sola ventana nativa (`pywebview`):
-
-- **Calculadora Demo**: la misma calculadora interactiva de la landing comercial del proyecto, con escenarios de ejemplo (E1–E5, E-AN) para explicar el modelo WSS sin necesidad de hardware real.
-- **Mis Redes**: escaneo real de las redes Wi-Fi visibles desde el equipo (`netsh wlan show networks` en Windows), con el modelo WSS aplicado a cada red detectada, más un motor de recomendaciones que traduce cada resultado a una vista sencilla y a acciones priorizadas.
-
-### Arquitectura y flujo de datos
-
-El proyecto separa estrictamente el cálculo técnico de la interpretación para el usuario:
-
-```
-netsh (Windows)  o  archivo .txt importado
-        │
-        ▼
-┌──────────────────────┐
-│   wss_engine.py      │  Parsea, normaliza y calcula el modelo WSS
-│                      │  (AU, EN, EX, AN, BM → score → clasificación)
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│ recommendation_      │  Traduce cada resultado normalizado a
-│ engine.py            │  estado sencillo, hallazgo, acción priorizada
-│                      │  y buenas prácticas (según perfil de usuario)
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│   app.py             │  Orquesta: agrupa redes lógicas (por SSID),
-│   (clase WssApi)     │  anonimiza si se pide, genera JSON/PDF,
-│                      │  expone todo a JavaScript vía pywebview
-└──────────┬───────────┘
-           ▼
-┌──────────────────────┐
-│   index.html         │  Renderiza vista sencilla + drawer técnico
-│                      │  con pestañas (Resumen / Parámetros / Radios /
-│                      │  Trazabilidad avanzada)
-└──────────────────────┘
-```
-
-`recommendation_engine.py` **nunca modifica** la fórmula WSS, los pesos ni los umbrales de clasificación definidos en la tesis — solo consume el resultado ya calculado y lo traduce.
-
-### Estados de evaluación (por qué un resultado puede no tener score)
-
-No todo lo que observa `netsh` es interpretable con certeza. El motor distingue:
-
-| Estado | Significado |
-|---|---|
-| `COMPLETE` | Autenticación y cifrado se reconocieron sin ambigüedad; hay `wss_score` numérico. |
-| `INCOMPLETE` | Se observó un valor no reconocido (`UNKNOWN`); `wss_score = null` y `classification = "NO_EVALUABLE"`. No se inventa un puntaje. |
-
-### Estados de observación de infraestructura (por qué el AN no salta con cualquier BSSID extra)
-
-Un mismo SSID con varios BSSID **no es automáticamente una anomalía** — es el comportamiento normal de routers dual-band, redes mesh o repetidores. El motor distingue explícitamente:
-
-| Estado | Cuándo aparece | ¿Afecta el score? |
+| Aspecto | Modelo final de la tesis | Implementación revisada en `main` |
 |---|---|---|
-| `SINGLE_BSSID` | Un solo punto de acceso observado para ese SSID. | — |
-| `MULTI_RADIO_OBSERVED` | Mismo SSID en varias bandas (ej. 2,4 GHz y 5 GHz). | No, `AN=0`. |
-| `MULTI_AP_OBSERVED` | Varios puntos de acceso con el mismo perfil de seguridad. | No, `AN=0`. |
-| `SECURITY_PROFILE_MISMATCH` | Mismo SSID con perfiles de seguridad distintos entre BSSID. | No, `AN=0`; se marca como "requiere verificación técnica", sin afirmar ataque. |
-| `HIDDEN_SSID` | SSID oculto observado individualmente; se numeran de forma estable (`SSID oculto 1`, `SSID oculto 2`...). | — |
+| Fórmula | `10 × (0.50 × AU + 0.50 × EN)` | `10 × (0.30 × AU + 0.25 × EN + 0.15 × EX + 0.20 × AN + 0.10 × BM)` |
+| Señal y alineación técnica | Contexto descriptivo, sin modificar el puntaje | EX y BM participan en el cálculo |
+| Vector | `WSS:2.0/AU:<valor>/EN:<valor>` | `WSS:1.0/AU:.../EN:.../EX:.../AN:.../BM:...` |
+| Infraestructura | Observaciones para revisión, sin detección de ataques | Se conservan observaciones; AN permanece en el modelo y recibe 0 en la evaluación de redes |
+| Calculadora de demostración | Debe representar la fórmula final AU/EN | `index.html` conserva la fórmula preliminar de cinco componentes |
+| Pruebas | La tesis informa 99 pruebas aprobadas para su versión sincronizada | Deben distinguirse de las pruebas del código actualmente publicado |
 
-`AN=1` (condición anómala confirmada) queda reservado para cuando exista una línea base autorizada de comparación — no se dispara solo por heurística de BSSID múltiple.
+`ENGINE_VERSION = "2.0"` y `REPORT_VERSION = "2.0"` identifican el motor y el formato de reporte. Esas etiquetas **no acreditan que el código implemente el modelo WSS 2.0**: debe verificarse la fórmula y el vector efectivo.
 
-### Motor de recomendaciones
+Para completar la coherencia entre tesis y software es necesario incorporar o revisar la versión AU/EN, sincronizar la calculadora y los reportes, y verificar sus pruebas. Los valores WSS 2.0 de este documento son la especificación académica y no deben atribuirse a los resultados actuales de `main`.
 
-Siete reglas trazables, cada una con código y versión:
+## Propósito y alcance
 
-| Regla | Condición | Estado sencillo |
-|---|---|---|
-| `REC-01` | WPA3-Personal con CCMP | Configuración adecuada |
-| `REC-02` | WPA2-Personal con CCMP/AES | Configuración adecuada |
-| `REC-03` | WPA/WPA2 con TKIP | Requiere atención |
-| `REC-04` | WEP | Protección insuficiente |
-| `REC-05` | Red abierta / sin cifrado | Protección insuficiente |
-| `REC-06` | Valores no reconocidos / evaluación incompleta | No se pudo completar la evaluación |
-| `REC-07` | Perfiles de seguridad distintos bajo el mismo SSID | Requiere verificación técnica |
+La investigación busca diseñar e implementar un sistema que evalúe configuraciones inalámbricas observables, presente resultados comprensibles y trazables, permita estudiar su comportamiento en escenarios controlados y valore su comprensión y utilidad en una organización de Asunción.
 
-El estado sencillo, el color y la severidad usan un **único mapeo central** (`CLASSIFICATION_RANK` / `CLASSIFICATION_PRESENTATION`) para que clasificación técnica, texto y color nunca se contradigan entre sí.
+La tesis denomina al enfoque **observación pasiva**: la aplicación consulta información disponible mediante Windows, sin conectarse a las redes evaluadas, capturar contraseñas, interceptar tráfico privado ni ejecutar pruebas de penetración. La fuente principal es:
 
-Además, cada resultado genera **acciones priorizadas cualitativamente** (sin puntajes de costo-beneficio inventados) según el perfil de quien consulta:
-
-- `NETWORK_OWNER` — propietario/responsable de la red: acción principal, alternativa inmediata, solución definitiva y buenas prácticas.
-- `NETWORK_USER` — solo quiere conectarse: recomendaciones prudentes (evitar operaciones sensibles, preferir otra red, usar una VPN confiable solo si no hay alternativa).
-- `GENERAL` — perfil por defecto cuando no se especifica relación con la red.
-
-La app nunca afirma seguridad garantizada, ataque confirmado, "Evil Twin" confirmado, ni usa relaciones no verificadas tipo 80/20.
-
-### Exportación de reportes (JSON y PDF)
-
-Ambos formatos se generan desde `WssApi.last_results` / `last_metadata` — es decir, desde lo último efectivamente evaluado en Python, nunca desde datos que pudieran modificarse en el navegador embebido.
-
-- **Guardado nativo**: usa el diálogo `Guardar como` de Windows (no escribe directamente en la carpeta del proyecto). Carpeta inicial: `Descargas` → `Documentos` → carpeta personal, en ese orden de preferencia.
-- **Nombre sugerido automático**: `WSS_Reporte_<AAAA-MM-DD>_<HHMMSS>.pdf` (o `.json`), con sufijo `_anon` si se anonimiza.
-- **Anonimización opcional**: reemplaza SSID por `SSID-001`, `SSID-002`... y BSSID por `BSSID-001`, `BSSID-002`..., de forma consistente dentro del mismo reporte. Los identificadores de SSID oculto (`SSID oculto N`) se preservan tal cual, ya que funcionan como etiqueta técnica, no como dato identificable.
-- **Agrupación lógica en el PDF**: una red dual-band o con varios puntos de acceso aparece como **una sola ficha**, no una por cada BSSID — evita duplicar visualmente lo que es la misma red.
-- **Texto de alcance obligatorio** en cada reporte: *"Este reporte corresponde a una evaluación de parámetros Wi-Fi observables y no constituye una auditoría integral de ciberseguridad."*
-
----
-
-## Requisitos
-
-- Windows 10/11 (el escaneo real solo funciona en Windows; en otros sistemas operativos la pestaña "Mis Redes" ofrece datos de ejemplo para poder probar la interfaz).
-- Python 3.9 o superior.
-
-## Instalación
-
-```bash
-pip install -r requirements.txt
+```powershell
+netsh wlan show networks mode=bssid
 ```
 
-Dependencias principales (`requirements.txt`): `pywebview>=4.4` (ventana nativa) y `fpdf2>=2.7` (generación de PDF).
+Este alcance describe las acciones de la aplicación; no verifica que el adaptador opere exclusivamente en escucha a nivel de radio.
 
-## Ejecución
+El sistema no mide riesgo organizacional integral, no detecta Evil Twin, intrusiones ni anomalías de ataque y no sustituye una auditoría profesional. No evalúa contraseñas, firmware, segmentación, dispositivos conectados ni políticas internas.
 
-```bash
-python app.py
+## Modelo WSS 2.0 definido en la tesis
+
+### Fórmula y normalización
+
+```text
+WSS = 10 × (0.50 × AU + 0.50 × EN)
 ```
 
-Se abre una ventana nativa con la aplicación. La pestaña "Calculadora Demo" está disponible siempre; la pestaña "Mis Redes" detecta automáticamente si el escaneo real está disponible en este sistema (`get_platform_info()`).
+| Autenticación normalizada | AU |
+|---|---:|
+| SAE / WPA3-Personal | 0.1 |
+| WPA2-PSK | 0.3 |
+| WPA-PSK | 0.7 |
+| OPEN | 1.0 |
 
-## Estructura del repositorio
+| Cifrado normalizado | EN |
+|---|---:|
+| CCMP | 0.1 |
+| TKIP | 0.8 |
+| WEP | 0.9 |
+| NONE | 1.0 |
 
-```
-test-app-wss_framework/
-├── app.py                      ← punto de entrada: ventana pywebview, clase WssApi,
-│                                   agrupación lógica, anonimización, exportación JSON/PDF
-├── wss_engine.py                ← parser de netsh + cálculo del modelo WSS (AU/EN/EX/AN/BM)
-├── recommendation_engine.py     ← motor de recomendaciones (reglas REC-01 a REC-07,
-│                                   acciones priorizadas por perfil de usuario)
-├── index.html                   ← interfaz completa (landing demo + vista "Mis Redes")
-├── requirements.txt              ← dependencias de producción
-├── requirements-dev.txt          ← dependencias de desarrollo (pytest)
-├── tests/
-│   ├── test_wss_engine.py
-│   ├── test_app_io.py
-│   ├── test_recommendation_engine.py
-│   ├── test_encoding_guard.py            ← evita regresiones de codificación (mojibake)
-│   ├── test_sprint_04_prioritization_pdf.py
-│   └── fixtures/netsh/                    ← capturas anonimizadas reales + casos sintéticos
-├── SPRINT_01_RESULTADOS.md      ← corrección del parser + pruebas automatizadas
-├── SPRINT_02_RESULTADOS.md      ← trazabilidad de origen + corrección de falsos positivos AN
-├── SPRINT_03_RESULTADOS.md      ← vista sencilla/técnica + motor de recomendaciones
-└── SPRINT_04_RESULTADOS.md      ← priorización por perfil + exportación PDF profesional
-```
+Con estas tablas, las configuraciones evaluables producen puntajes entre **1.0 y 10.0**. Los coeficientes son heurísticos, definidos por los autores para ordenar la severidad relativa; no son probabilidades de ataque ni porcentajes de vulnerabilidad.
 
-Cada `SPRINT_0X_RESULTADOS.md` documenta, con evidencia real (comandos ejecutados, resultados de `pytest`, casos de prueba), qué cambió, por qué, y qué quedó explícitamente fuera de alcance en esa etapa — útil como bitácora de desarrollo trazable para el anexo metodológico de la tesis.
+La ponderación 50/50 es una decisión metodológica ante la falta de evidencia empírica suficiente para asignar mayor peso a uno de los componentes. La tesis prevé un análisis de sensibilidad con pesos AU/EN de 40/60, 50/50 y 60/40; sus resultados no están presentados en el documento revisado.
 
-## Cómo se conecta Python con la interfaz
+### Clasificación
 
-`app.py` crea una ventana con `pywebview` y expone una clase `WssApi` al JavaScript de `index.html` a través de `window.pywebview.api`. Métodos principales disponibles desde el frontend:
-
-| Método | Qué hace |
+| Intervalo del puntaje | Clasificación |
 |---|---|
-| `scan_networks()` | Ejecuta el escaneo real (`netsh`) y devuelve resultados con WSS calculado y recomendaciones aplicadas. |
-| `scan_networks_demo()` | Devuelve datos sintéticos de demostración (`synthetic_data: true`), útil en sistemas no-Windows. |
-| `import_txt_file(selected_path=None)` | Abre el diálogo nativo de selección de archivo (o usa una ruta dada) y evalúa un `.txt` de `netsh` previamente exportado. |
-| `get_platform_info()` | Informa si el escaneo real está disponible en este sistema. |
-| `update_recommendation_profile(target_user)` | Recalcula las recomendaciones de los últimos resultados según el perfil elegido (`NETWORK_OWNER` / `NETWORK_USER` / `GENERAL`), sin volver a escanear. |
-| `export_json(anonymize=False, selected_path=None)` | Genera el reporte JSON 2.0 desde los últimos resultados y lo guarda vía diálogo nativo. |
-| `export_pdf(anonymize=False, organization=None, selected_path=None)` | Genera el reporte PDF profesional (redes agrupadas lógicamente) y lo guarda vía diálogo nativo. |
-| `open_exported_file(saved_path)` | Abre el archivo exportado con la aplicación predeterminada de Windows. |
-| `show_exported_file_in_folder(saved_path)` | Abre el Explorador de Windows y selecciona el archivo exportado. |
+| WSS ≤ 2.5 | Bajo |
+| 2.5 < WSS ≤ 5.0 | Medio |
+| 5.0 < WSS ≤ 7.5 | Alto |
+| WSS > 7.5 | Crítico |
 
-Toda la lógica de parseo de `netsh` y el cálculo del modelo WSS vive en `wss_engine.py`, independiente de la interfaz y probable por separado:
+Los umbrales y coeficientes pertenecen a esta investigación. CVSS es una referencia conceptual para estructurar y comunicar severidad; WSS no implementa su fórmula ni adopta sus rangos. La denominación «2.0» distingue la formulación final de la versión exploratoria interna, no una versión de un estándar externo.
 
-```bash
-python wss_engine.py
+### Criterios de aceptación
+
+| Escenario | AU | EN | WSS esperado | Clasificación |
+|---|---:|---:|---:|---|
+| WPA3/CCMP | 0.1 | 0.1 | 1.0 | Bajo |
+| WPA2/CCMP | 0.3 | 0.1 | 2.0 | Bajo |
+| WPA versión 1/TKIP | 0.7 | 0.8 | 7.5 | Alto |
+| Red abierta, OPEN/NONE | 1.0 | 1.0 | 10.0 | Crítico |
+| WEP teórico, OPEN/WEP | 1.0 | 0.9 | 9.5 | Crítico |
+
+Son resultados determinísticos derivados de la fórmula 50/50, utilizados como criterios de aceptación. **No son mediciones experimentales obtenidas en la organización.** WEP se mantiene como caso teórico por falta de infraestructura para reproducirlo físicamente.
+
+### Información contextual
+
+En WSS 2.0, los siguientes datos explican el entorno y preservan trazabilidad sin modificar el puntaje:
+
+- **Exposición observable:** señal porcentual y aproximación `RSSI ≈ -100 + Q/2 dBm`, donde Q es el porcentaje informado por Windows. No representa distancia exacta ni una vulnerabilidad por sí misma.
+- **Alineación con la referencia técnica:** alineada para WPA3-Personal o WPA2-Personal con CCMP; parcialmente alineada para CCMP con autenticación fuera de esa referencia; desviada para cifrado obsoleto o ausente. No equivale a certificación de cumplimiento.
+- **Infraestructura:** SSID, BSSID, banda, canal, tipo de radio y MFP cuando esté disponible. Varios BSSID bajo el mismo SSID pueden corresponder a doble banda, mesh, repetidores o varios puntos de acceso.
+
+El vector final contiene exclusivamente AU y EN. No incluye AN, E-AN, EX ponderado ni BM ponderado. Esta separación aún debe trasladarse a la implementación publicada indicada al inicio.
+
+## Funcionalidades de la aplicación publicada
+
+- Captura desde `netsh` en Windows e importación de archivos `.txt` previamente guardados.
+- Normalización de autenticación y cifrado, preservando los textos de origen.
+- Vista sencilla con recomendaciones y vista técnica con parámetros, radios y trazabilidad.
+- Agrupamiento por SSID visible, conservando los BSSID individuales. El agrupamiento Python selecciona como representante el resultado de mayor severidad; los SSID ocultos se separan por BSSID cuando está disponible.
+- Observación de perfiles de seguridad diferentes bajo el mismo SSID, presentada como necesidad de revisión técnica y sin confirmar ataques.
+- Recomendaciones para `NETWORK_OWNER`, `NETWORK_USER` o `GENERAL`. Cambiar el perfil modifica las recomendaciones, no el puntaje calculado.
+- Exportación JSON y PDF desde los últimos resultados almacenados por Python, con diálogo nativo de guardado.
+- Anonimización opcional de SSID y BSSID en los reportes.
+- Datos sintéticos de demostración identificados con `synthetic_data: true`.
+
+### Resultados incompletos
+
+| Estado | Comportamiento |
+|---|---|
+| `COMPLETE` | Autenticación y cifrado reconocidos por el normalizador; se calcula un puntaje. |
+| `INCOMPLETE` | Alguno de los parámetros no se reconoce; `wss_score = null` y `classification = "NO_EVALUABLE"`. |
+
+Un resultado no evaluable no equivale a puntaje cero ni a configuración segura. El reconocimiento depende de los textos reportados por Windows y no valida la configuración interna del punto de acceso.
+
+### Recomendaciones y reportes
+
+`recommendation_engine.py` consume los resultados calculados y aplica reglas trazables: `REC-01` para WPA3/CCMP, `REC-02` para WPA2/CCMP, `REC-03` para TKIP, `REC-04` para WEP, `REC-05` para red abierta o sin cifrado, `REC-06` para parámetros no interpretados y `REC-07` para perfiles diferentes bajo el mismo SSID. La priorización es cualitativa y depende del rol del usuario.
+
+Los reportes conservan fuente, parámetros originales y normalizados, clasificación, vector, observaciones y recomendaciones. El PDF agrupa redes lógicas y la exportación permite sustituir identificadores por etiquetas como `SSID-001` y `BSSID-001`. Antes de publicar evidencia, corresponde revisar también los nombres de archivos y cualquier otro dato institucional.
+
+El estado del modelo se conserva como `PROVISIONAL`. Los reportes incorporan el siguiente alcance:
+
+> Este reporte corresponde a una evaluación de parámetros Wi-Fi observables y no constituye una auditoría integral de ciberseguridad.
+
+## Instalación y uso
+
+La captura directa requiere Windows, un adaptador Wi-Fi disponible y el servicio WLAN habilitado. Se requiere Python 3.9 o superior. Las dependencias declaradas son `pywebview>=4.4` y `fpdf2>=2.7`.
+
+Desde PowerShell, en la carpeta donde se desea clonar el proyecto:
+
+```powershell
+git clone https://github.com/atreus-oss/test-app-wss_framework.git
+cd test-app-wss_framework
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe app.py
 ```
 
-## Pruebas automatizadas
+1. Abrir **Mis Redes** y ejecutar **Escanear**, o importar una salida `.txt` de `netsh`.
+2. Consultar la clasificación, las recomendaciones y los detalles técnicos.
+3. Seleccionar el perfil de usuario para ajustar las acciones sugeridas.
+4. Exportar JSON o PDF y activar la anonimización cuando corresponda.
 
-```bash
-pip install -r requirements-dev.txt
-python -m pytest -q
+La **Calculadora Demo** permite explorar ejemplos, pero la versión publicada utiliza la fórmula preliminar. Los datos de demostración no constituyen evidencia de redes reales. La captura con `netsh` solo está disponible en Windows.
+
+## Arquitectura
+
+```text
+netsh o archivo .txt
+    -> wss_engine.py: lectura, normalización y cálculo
+    -> recommendation_engine.py: interpretación y recomendaciones
+    -> app.py / WssApi: coordinación, agrupamiento y reportes
+    -> index.html / pywebview: presentación e interacción
 ```
 
-La suite cubre parsing multilenguaje (español/inglés, con y sin tilde), estados incompletos, agrupación de redes lógicas, las 7 reglas de recomendación, priorización por perfil, generación de JSON/PDF (incluida su versión anonimizada) y una prueba preventiva de codificación (`test_encoding_guard.py`) que falla si se reintroduce texto corrupto en `index.html`, `app.py` o `wss_engine.py`.
+La calculadora de demostración también contiene un cálculo propio en JavaScript dentro de `index.html`; su fórmula debe mantenerse sincronizada con el motor Python.
 
-## Empaquetado como ejecutable (.exe)
+| Archivo o carpeta | Responsabilidad |
+|---|---|
+| [`wss_engine.py`](wss_engine.py) | Parser de `netsh`, normalización, observaciones y puntuación |
+| [`recommendation_engine.py`](recommendation_engine.py) | Reglas y acciones priorizadas por perfil |
+| [`app.py`](app.py) | Ventana nativa, API Python/JavaScript, agrupamiento y exportaciones |
+| [`index.html`](index.html) | Interfaz de demostración y evaluación de redes |
+| [`requirements.txt`](requirements.txt) | Dependencias de ejecución |
+| [`requirements-dev.txt`](requirements-dev.txt) | Dependencias de pruebas |
+| [`tests/`](tests/) | Pruebas automatizadas y archivos de entrada de referencia |
+| `SPRINT_01_RESULTADOS.md` a `SPRINT_04_RESULTADOS.md` | Bitácoras de etapas previas; documentación histórica |
 
-Para distribuir la app sin que el cliente necesite instalar Python, usar PyInstaller en una máquina Windows:
+`WssApi` expone, entre otros, `scan_networks()`, `scan_networks_demo()`, `import_txt_file()`, `get_platform_info()`, `update_recommendation_profile()`, `export_json()` y `export_pdf()` mediante `window.pywebview.api`.
 
-```bash
-pip install pyinstaller
-pyinstaller --noconfirm --onefile --windowed ^
-  --add-data "index.html;." ^
-  --name "WSS-Framework" ^
-  app.py
+## Verificación y estado de la validación académica
+
+Para ejecutar las pruebas sin abrir la interfaz ni escanear redes:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
-El ejecutable resultante queda en `dist/WSS-Framework.exe`.
+La suite cubre parser, normalización, valores desconocidos, infraestructura, agrupamiento, recomendaciones, exportaciones JSON/PDF, anonimización y codificación de texto. Superarla verifica el comportamiento codificado; no demuestra por sí solo correspondencia con la fórmula final de la tesis.
 
-## Alcance y limitaciones
+En la revisión del 5 de octubre de 2026, la suite de `0d1bc90` ejecutada en Windows con Python 3.12.14, pytest 9.1.1 y fpdf2 2.8.9 produjo **76 pruebas aprobadas y 13 fallidas, de 89 en total**. Los fallos se produjeron en generación de PDF con `FPDFException: Not enough horizontal space to render a single character`. La interfaz gráfica y el ejecutable no se verificaron. Este resultado no reproduce las 99 pruebas aprobadas de la versión citada en la tesis y requiere revisión de compatibilidad y maquetación del reporte.
 
-- **El escaneo es pasivo**: solo lee parámetros que los puntos de acceso ya transmiten públicamente (SSID, BSSID, autenticación, cifrado, intensidad de señal, canal, banda). No ejecuta pruebas activas, no fuerza autenticaciones ni intercepta tráfico, en línea con el alcance definido en la tesis.
-- **La detección de condición anómala es heurística y preliminar**: cuando el sistema encuentra algo que amerita revisión (por ejemplo, perfiles de seguridad distintos bajo el mismo SSID), lo señala como tal — nunca como un ataque confirmado o un "Evil Twin" detectado.
-- **La intensidad de señal** que reporta `netsh` viene como porcentaje, no en dBm; se aplica una aproximación estándar para clasificar el factor de exposición, no una medición de precisión de laboratorio.
-- **Este reporte no reemplaza una auditoría integral de ciberseguridad** — así lo indica explícitamente el texto de alcance incluido en cada JSON y PDF generado.
-- El estado del modelo se marca como `PROVISIONAL` en cada exportación, reflejando que corresponde a un trabajo de tesis en curso, no a un producto certificado.
+| Evidencia | Estado según el documento de tesis revisado |
+|---|---|
+| Pruebas de `sprint-05-wss-v2-au-en` | Se informan 99 pruebas aprobadas; requieren vinculación con el código y registro de ejecución de esa versión |
+| Escenarios físicos WPA3/CCMP, WPA2/CCMP, WPA/TKIP y red abierta | Evidencias finales de configuración, capturas y reportes pendientes de incorporación documental |
+| WEP | Caso teórico; no se afirma prueba física |
+| Doble banda | Prueba funcional de agrupamiento; evidencia final prevista en anexos |
+| Sensibilidad de ponderaciones | Procedimiento 40/60, 50/50 y 60/40 definido; resultados no presentados |
+| Aplicación organizacional | Pendiente de incorporación documental final con autorización y evidencia |
+| Comprensión y utilidad PRE/POST | Aplicación, procesamiento y resultados pendientes |
+
+El componente con usuarios prevé invitar a **10 colaboradores**, con participación voluntaria y respuestas vinculadas mediante códigos **P01-P10**, sin solicitar nombres ni correos. Se trata de datos codificados o seudonimizados, no de anonimato absoluto.
+
+El análisis previsto utiliza frecuencias, porcentajes, distribución de respuestas y, para escalas ordinales, mediana cuando corresponda. La comparación PRE/POST describe mejora, estabilidad o disminución por participante y compara respuestas correctas en una pregunta objetiva. No se construye un puntaje global de comprensión como escala validada. El diseño no tiene grupo control y no permite afirmar causalidad ni generalizar estadísticamente a otras organizaciones.
+
+Las pruebas del software, los valores matemáticos esperados y las mediciones con participantes son evidencias diferentes. No deben publicarse porcentajes de mejora ni conclusiones de utilidad hasta disponer de datos reales.
+
+## Empaquetado para Windows
+
+Para generar un ejecutable con PyInstaller desde PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install pyinstaller
+.\.venv\Scripts\python.exe -m PyInstaller --noconfirm --onefile --windowed --add-data "index.html;." --name "WSS-Framework" app.py
+```
+
+El resultado se genera en `dist/WSS-Framework.exe`. Debe comprobarse su arranque, carga de `index.html` y exportaciones en el equipo de destino; este procedimiento no implica que exista una distribución binaria publicada o validada.
+
+## Referencia académica
+
+Este README toma como referencia el documento de tesis de Cabrera Oviedo y Ferreira Cardozo, con fecha de portada febrero de 2026: objetivos y alcance en el capítulo I; definición del modelo en el capítulo II; normalización, evolución, fórmula, sensibilidad y validación en las secciones 4.5 a 4.15; estado de los resultados en las secciones 5.1 a 5.10; conclusiones y evidencias pendientes en los capítulos finales y anexos.
+
+La coherencia documental exige distinguir severidad técnica de riesgo organizacional, modelo final de implementación publicada y resultados verificados de validaciones pendientes.
