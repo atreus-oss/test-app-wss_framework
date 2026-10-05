@@ -1,6 +1,6 @@
 # WSS Framework: evaluación de configuraciones Wi-Fi observables
 
-Aplicación de escritorio en Python para Windows desarrollada como parte de la tesis **«Sistema automatizado de evaluación de seguridad Wi-Fi con validación experimental controlada en una organización de Asunción, Paraguay, 2026»**, de José Luis Cabrera Oviedo y Arturo Rafael Ferreira Cardozo, Facultad de Ingeniería de la Universidad del Norte.
+Aplicación de escritorio en Python para Windows desarrollada como parte de la tesis **«Sistema automatizado de evaluación de seguridad Wi-Fi con validación experimental controlada en una organización de Asunción, Paraguay, 2026»**, de José Luis Cabrera Oviedo y Arturo Rafael Ferreira Cardozo, Facultad de Ingeniería de la Universidad del Norte (UNINORTE).
 
 El proyecto integra captura o importación de parámetros Wi-Fi, normalización, puntuación, recomendaciones y reportes. El modelo final de la investigación se denomina **Wireless Severity Score (WSS) 2.0** y estima **severidad técnica relativa** mediante autenticación y cifrado. Un puntaje menor indica menor severidad dentro del modelo; no garantiza que una red sea segura.
 
