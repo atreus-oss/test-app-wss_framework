@@ -4,24 +4,13 @@ Aplicación de escritorio en Python para Windows desarrollada como parte de la t
 
 El proyecto integra captura o importación de parámetros Wi-Fi, normalización, puntuación, recomendaciones y reportes. El modelo final de la investigación se denomina **Wireless Severity Score (WSS) 2.0** y estima **severidad técnica relativa** mediante autenticación y cifrado. Un puntaje menor indica menor severidad dentro del modelo; no garantiza que una red sea segura.
 
-## Estado del repositorio y correspondencia con la tesis
+## Estado de implementación y correspondencia con la tesis
 
-**La implementación publicada en `main` todavía utiliza la formulación preliminar de cinco componentes. Este README documenta el modelo final de la tesis y la diferencia con el código publicado; su actualización no migra la aplicación a WSS 2.0.**
+Esta versión implementa **WSS 2.0** tanto en el motor Python como en la calculadora. El puntaje usa exclusivamente autenticación y cifrado, con pesos 0.50/0.50; la exposición observable y la alineación técnica permanecen como contexto. Los resultados nuevos y los reportes JSON/PDF utilizan el vector `WSS:2.0/AU:<valor>/EN:<valor>` y no generan componentes ponderados EX, AN o BM.
 
-La revisión del 5 de octubre de 2026 tomó como base el commit [`0d1bc90`](https://github.com/atreus-oss/test-app-wss_framework/commit/0d1bc90e0c9cabbc709baeca26d2a3187e56b786). La tesis identifica la rama `sprint-05-wss-v2-au-en` como su versión sincronizada; esa rama no aparecía entre las ramas remotas publicadas durante la revisión.
+La migración y sus comprobaciones se documentan en [SPRINT_05_RESULTADOS.md](SPRINT_05_RESULTADOS.md). Se verificaron **119 pruebas Python aprobadas**, además de una prueba de interfaz en Edge con datos sintéticos y puente Python simulado. La prueba de interfaz cubre los cinco escenarios de la tesis, independencia respecto de la señal, cierre del informe, Escape, foco, pantalla estrecha y escaneos vacíos o fallidos.
 
-| Aspecto | Modelo final de la tesis | Implementación revisada en `main` |
-|---|---|---|
-| Fórmula | `10 × (0.50 × AU + 0.50 × EN)` | `10 × (0.30 × AU + 0.25 × EN + 0.15 × EX + 0.20 × AN + 0.10 × BM)` |
-| Señal y alineación técnica | Contexto descriptivo, sin modificar el puntaje | EX y BM participan en el cálculo |
-| Vector | `WSS:2.0/AU:<valor>/EN:<valor>` | `WSS:1.0/AU:.../EN:.../EX:.../AN:.../BM:...` |
-| Infraestructura | Observaciones para revisión, sin detección de ataques | Se conservan observaciones; AN permanece en el modelo y recibe 0 en la evaluación de redes |
-| Calculadora de demostración | Debe representar la fórmula final AU/EN | `index.html` conserva la fórmula preliminar de cinco componentes |
-| Pruebas | La tesis informa 99 pruebas aprobadas para su versión sincronizada | Deben distinguirse de las pruebas del código actualmente publicado |
-
-`ENGINE_VERSION = "2.0"` y `REPORT_VERSION = "2.0"` identifican el motor y el formato de reporte. Esas etiquetas **no acreditan que el código implemente el modelo WSS 2.0**: debe verificarse la fórmula y el vector efectivo.
-
-Para completar la coherencia entre tesis y software es necesario incorporar o revisar la versión AU/EN, sincronizar la calculadora y los reportes, y verificar sus pruebas. Los valores WSS 2.0 de este documento son la especificación académica y no deben atribuirse a los resultados actuales de `main`.
+La tesis informa 99 pruebas de una versión previa identificada como `sprint-05-wss-v2-au-en`. Ese registro histórico es distinto de las 119 pruebas de esta implementación. La validación física, organizacional y PRE/POST conserva el estado pendiente descrito por el libro; esta actualización no genera evidencia experimental de campo.
 
 ## Propósito y alcance
 
@@ -94,9 +83,9 @@ En WSS 2.0, los siguientes datos explican el entorno y preservan trazabilidad si
 - **Alineación con la referencia técnica:** alineada para WPA3-Personal o WPA2-Personal con CCMP; parcialmente alineada para CCMP con autenticación fuera de esa referencia; desviada para cifrado obsoleto o ausente. No equivale a certificación de cumplimiento.
 - **Infraestructura:** SSID, BSSID, banda, canal, tipo de radio y MFP cuando esté disponible. Varios BSSID bajo el mismo SSID pueden corresponder a doble banda, mesh, repetidores o varios puntos de acceso.
 
-El vector final contiene exclusivamente AU y EN. No incluye AN, E-AN, EX ponderado ni BM ponderado. Esta separación aún debe trasladarse a la implementación publicada indicada al inicio.
+El vector final contiene exclusivamente AU y EN. No incluye AN, E-AN, EX ponderado ni BM ponderado. Esta separación se mantiene en el motor, la calculadora y los reportes.
 
-## Funcionalidades de la aplicación publicada
+## Funcionalidades de la aplicación
 
 - Captura desde `netsh` en Windows e importación de archivos `.txt` previamente guardados.
 - Normalización de autenticación y cifrado, preservando los textos de origen.
@@ -146,7 +135,7 @@ python -m venv .venv
 3. Seleccionar el perfil de usuario para ajustar las acciones sugeridas.
 4. Exportar JSON o PDF y activar la anonimización cuando corresponda.
 
-La **Calculadora Demo** permite explorar ejemplos, pero la versión publicada utiliza la fórmula preliminar. Los datos de demostración no constituyen evidencia de redes reales. La captura con `netsh` solo está disponible en Windows.
+La **Calculadora Demo** utiliza la misma fórmula WSS 2.0 que el motor Python. Los datos de demostración no constituyen evidencia de redes reales. La captura con `netsh` solo está disponible en Windows.
 
 ## Arquitectura
 
@@ -169,7 +158,7 @@ La calculadora de demostración también contiene un cálculo propio en JavaScri
 | [`requirements.txt`](requirements.txt) | Dependencias de ejecución |
 | [`requirements-dev.txt`](requirements-dev.txt) | Dependencias de pruebas |
 | [`tests/`](tests/) | Pruebas automatizadas y archivos de entrada de referencia |
-| `SPRINT_01_RESULTADOS.md` a `SPRINT_04_RESULTADOS.md` | Bitácoras de etapas previas; documentación histórica |
+| `SPRINT_01_RESULTADOS.md` a `SPRINT_05_RESULTADOS.md` | Bitácoras históricas y evidencia de la migración a WSS 2.0 |
 
 `WssApi` expone, entre otros, `scan_networks()`, `scan_networks_demo()`, `import_txt_file()`, `get_platform_info()`, `update_recommendation_profile()`, `export_json()` y `export_pdf()` mediante `window.pywebview.api`.
 
@@ -184,7 +173,23 @@ Para ejecutar las pruebas sin abrir la interfaz ni escanear redes:
 
 La suite cubre parser, normalización, valores desconocidos, infraestructura, agrupamiento, recomendaciones, exportaciones JSON/PDF, anonimización y codificación de texto. Superarla verifica el comportamiento codificado; no demuestra por sí solo correspondencia con la fórmula final de la tesis.
 
-En la revisión del 5 de octubre de 2026, la suite de `0d1bc90` ejecutada en Windows con Python 3.12.14, pytest 9.1.1 y fpdf2 2.8.9 produjo **76 pruebas aprobadas y 13 fallidas, de 89 en total**. Los fallos se produjeron en generación de PDF con `FPDFException: Not enough horizontal space to render a single character`. La interfaz gráfica y el ejecutable no se verificaron. Este resultado no reproduce las 99 pruebas aprobadas de la versión citada en la tesis y requiere revisión de compatibilidad y maquetación del reporte.
+Verificación de esta versión: Windows, Python 3.12.14, pytest 9.1.1 y fpdf2 2.8.9; **119 pruebas aprobadas**. Se corrigió el retorno al margen izquierdo después de los párrafos del PDF, causante de los fallos observados anteriormente. Se verificó la interfaz en un navegador con datos sintéticos; no se probaron el ejecutable empaquetado ni capturas físicas de redes.
+
+Para la prueba de interfaz se necesita Node.js, Playwright y Microsoft Edge. Con el entorno Python preparado:
+
+```powershell
+npm install --no-save --package-lock=false playwright
+$env:PYTHON = (Resolve-Path .venv/Scripts/python.exe).Path
+node tests/ui-smoke.cjs
+```
+
+### Observaciones de redes ocultas
+
+Una observación se considera oculta solo si el encabezado SSID está vacío y existe un BSSID con formato válido, distinto de cero y de broadcast. Se descartan encabezados sin radio, BSSID vacíos o mal formados y registros idénticos repetidos. Si la misma captura proporciona un SSID visible para ese BSSID y perfil de seguridad, se conserva la observación identificada; los perfiles diferentes no se descartan.
+
+Las observaciones ocultas válidas se conservan y se presentan individualmente. La aplicación no puede verificar presencia física más allá de la información entregada por Windows ni descartar la caché del sistema operativo. Al iniciar un nuevo escaneo se retiran los resultados anteriores; un fallo no deja redes anteriores visibles ni exportables como resultado vigente.
+
+El informe técnico se cierra con **Cerrar informe** o **Escape**, y devuelve el foco al botón que lo abrió. Su encabezado permanece accesible al desplazar el contenido.
 
 | Evidencia | Estado según el documento de tesis revisado |
 |---|---|

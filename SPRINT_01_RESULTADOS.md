@@ -94,10 +94,9 @@ Resultado:
 Sin errores.
 ```
 
-Tambien se ejecuto con el runtime Python empaquetado de Codex:
 
 ```powershell
-C:\Users\Jose\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe -m py_compile app.py wss_engine.py
+python -m py_compile app.py wss_engine.py
 ```
 
 Resultado:
@@ -111,7 +110,7 @@ Sin errores.
 Comando ejecutado:
 
 ```powershell
-C:\Users\Jose\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe -m pytest -q
+python -m pytest -q
 ```
 
 Resultado:

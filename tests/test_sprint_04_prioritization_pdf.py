@@ -22,8 +22,8 @@ def _result(auth, cipher, classification="BAJO", evaluation_status="COMPLETE"):
         "evaluation_status": evaluation_status,
         "observation_status": "SINGLE_BSSID",
         "unknown_fields": [] if evaluation_status == "COMPLETE" else ["auth"],
-        "wss_score": 2.35 if evaluation_status == "COMPLETE" else None,
-        "wss_vector": "AU=0.3;EN=0.1;EX=1.0;AN=0;BM=0",
+        "wss_score": 2.0 if evaluation_status == "COMPLETE" else None,
+        "wss_vector": "WSS:2.0/AU:0.3/EN:0.1",
         "au": 0.3,
         "en": 0.1,
         "ex": 1.0,
@@ -47,7 +47,7 @@ def _network(ssid, bssid, auth="WPA2-PSK", cipher="CCMP", band="2,4 GHz", channe
         "cipher_raw": "CCMP" if cipher == "CCMP" else cipher,
         "band": band,
         "channel": channel,
-        "wss_vector": "WSS:1.0/AU:0.3/EN:0.1/EX:0.8/AN:0.0/BM:ALIGNED",
+        "wss_vector": "WSS:2.0/AU:0.3/EN:0.1",
     })
     return item
 
@@ -389,8 +389,8 @@ def test_pdf_wss_schema_version_is_not_confused_with_score():
     visible = built["visible_text"]
 
     assert "7,0" in visible
-    assert "Versión del esquema WSS: 1.0" in visible
-    assert "WSS:1.0/AU" not in visible
+    assert "Versión del esquema WSS: 2.0" in visible
+    assert "WSS:2.0/AU" not in visible
 
 
 def test_pdf_complementary_practices_appear_once():

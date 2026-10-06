@@ -1020,6 +1020,7 @@
     bottom: 0;
     width: min(580px, 94vw);
     max-height: none;
+    flex-direction: column;
     overflow: hidden;
     background: var(--bg-panel);
     border-left: 1px solid var(--line-strong);
@@ -1040,6 +1041,8 @@
     color: var(--text);
     border-radius: 8px;
     padding: 8px 12px;
+    flex-shrink: 0;
+    white-space: nowrap;
     cursor: pointer;
     font-size: 13px;
   }
@@ -1095,7 +1098,8 @@
     color: var(--text-dim);
   }
   .detail-drawer-body {
-    height: calc(100vh - 72px - 96px);
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 16px 20px 24px;
   }
@@ -1124,6 +1128,7 @@
     outline: 2px solid var(--severity-low);
     outline-offset: 3px;
   }
+  .detail-tab-panel { padding: 0; }
   .detail-tab-panel[hidden] { display: none; }
   .detail-kv {
     display: grid;
@@ -1172,7 +1177,8 @@
       z-index: 80;
     }
     .detail-drawer-body {
-      height: calc(100vh - 96px);
+      flex: 1;
+      min-height: 0;
     }
   }
 
@@ -1211,10 +1217,10 @@
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow"><span class="eyebrow-dot"></span> Evaluación pasiva · sin intrusión</div>
-        <h1>Sabé qué tan expuesta está tu red Wi-Fi<span class="accent">.</span></h1>
+        <h1>¿Sabes qué tan expuesta está tu red Wi-Fi?<span class="accent">.</span></h1>
         <p class="lede">
-          WSS Framework traduce la configuración de tu red inalámbrica —autenticación, cifrado, señal—
-          en un puntaje de severidad técnica de 0 a 10, sin ejecutar ninguna prueba activa sobre tu infraestructura.
+          WSS Framework traduce la configuración de tu red inalámbrica —autenticación y cifrado—
+          en un puntaje de severidad técnica relativa de 1.0 a 10.0, sin ejecutar ninguna prueba activa sobre tu infraestructura.
         </p>
         <div class="hero-actions">
           <a href="#calculadora" class="btn btn-primary">Probar la calculadora →</a>
@@ -1222,12 +1228,12 @@
         </div>
         <div class="hero-stats">
           <div class="stat">
-            <div class="num">0–10</div>
+            <div class="num">1–10</div>
             <div class="label">Escala de severidad</div>
           </div>
           <div class="stat">
-            <div class="num">5</div>
-            <div class="label">Dimensiones evaluadas</div>
+            <div class="num">2</div>
+            <div class="label">Componentes del puntaje</div>
           </div>
           <div class="stat">
             <div class="num">0</div>
@@ -1243,7 +1249,7 @@
         </div>
         <div id="hero-dial-mount"></div>
         <div class="vector-line">
-          <span class="hl">WSS:1.0</span>/AU:0.3/EN:0.1/EX:0.8/AN:0.0/BM:ALIGNED
+          <span class="hl">WSS:2.0</span>/AU:0.3/EN:0.1
         </div>
       </div>
     </div>
@@ -1252,7 +1258,7 @@
   <section id="como-funciona">
     <div class="wrap">
       <div class="section-label">Metodología</div>
-      <h2 class="section-title">Cinco señales observables. Un puntaje reproducible.</h2>
+      <h2 class="section-title">Autenticación y cifrado. Un puntaje reproducible.</h2>
       <p class="section-sub">
         El modelo no requiere conectarse de forma intrusiva ni interceptar tráfico. Lee únicamente lo que cualquier
         punto de acceso ya transmite públicamente, y lo convierte en un indicador técnico estructurado.
@@ -1270,19 +1276,19 @@
           <p>Evalúa el esquema de protección de datos: CCMP, TKIP, WEP o ausencia de cifrado.</p>
         </div>
         <div class="flow-step">
-          <div class="fkey">03 · EX</div>
+          <div class="fkey">Contexto</div>
           <h3>Exposición</h3>
-          <p>Estima la accesibilidad técnica real a partir de la intensidad de señal observada (RSSI).</p>
+          <p>Describe la intensidad de señal observada. No modifica el puntaje ni mide distancia exacta.</p>
         </div>
         <div class="flow-step">
-          <div class="fkey">04 · AN</div>
-          <h3>Anomalía</h3>
-          <p>Detecta condiciones de infraestructura como duplicidad de SSID con BSSID distinto.</p>
+          <div class="fkey">Evidencia</div>
+          <h3>Infraestructura</h3>
+          <p>Conserva radios y BSSID para revisión. Su multiplicidad no demuestra un ataque.</p>
         </div>
         <div class="flow-step">
-          <div class="fkey">05 · BM</div>
-          <h3>Benchmark</h3>
-          <p>Compara la configuración contra una línea base segura definida para tu organización.</p>
+          <div class="fkey">Referencia</div>
+          <h3>Alineación técnica</h3>
+          <p>Compara con WPA2/WPA3-Personal y CCMP de forma descriptiva, sin modificar el puntaje.</p>
         </div>
       </div>
     </div>
@@ -1300,11 +1306,11 @@
       </p>
 
       <div class="preset-row reveal">
-        <button class="preset-chip" data-preset="e1">WPA3 + CCMP (referencia segura)</button>
+        <button class="preset-chip" data-preset="e1">WPA3 + CCMP (menor severidad)</button>
         <button class="preset-chip" data-preset="e2">WPA2 + AES (uso común)</button>
-        <button class="preset-chip" data-preset="e3">WPA2 + TKIP (cifrado obsoleto)</button>
+        <button class="preset-chip" data-preset="e3">WPA versión 1 + TKIP</button>
         <button class="preset-chip" data-preset="e5">Red abierta (sin protección)</button>
-        <button class="preset-chip" data-preset="ean">SSID duplicado (anomalía)</button>
+        <button class="preset-chip" data-preset="e4">WEP (caso teórico)</button>
       </div>
 
       <div class="calc-wrap reveal">
@@ -1339,7 +1345,7 @@
           <div class="field">
             <div class="field-label">
               <span class="name">Intensidad de señal (RSSI)</span>
-              <span class="tag" id="rssi-tag">EX · -45 dBm</span>
+              <span class="tag" id="rssi-tag">Contexto · -45 dBm</span>
             </div>
             <div class="slider-row">
               <input type="range" id="rssi-slider" min="-90" max="-30" value="-45" step="1">
@@ -1347,19 +1353,8 @@
             </div>
           </div>
 
-          <div class="field">
-            <div class="field-label">
-              <span class="name">Condición anómala</span>
-              <span class="tag">AN</span>
-            </div>
-            <div class="toggle-row">
-              <div class="toggle-text">
-                Condicion observable
-                <span class="sub">Requiere verificacion tecnica segun regla metodologica</span>
-              </div>
-              <div class="switch" id="anomaly-switch"></div>
-            </div>
-          </div>
+          <p class="calc-note" id="context-output" aria-live="polite"></p>
+          <p class="calc-note">La señal y la alineación son contexto. No cambian WSS. Los escenarios son criterios matemáticos; WEP es teórico.</p>
 
         </div>
 
@@ -1384,39 +1379,27 @@
 
           <div class="vector-box">
             <div class="vb-label">Vector WSS</div>
-            <div class="vb-value" id="vector-output">WSS:1.0/AU:0.1/EN:0.1/EX:0.78/AN:0.0/BM:ALIGNED</div>
+            <div class="vb-value" id="vector-output">WSS:2.0/AU:0.3/EN:0.1</div>
           </div>
 
           <div class="breakdown">
             <div class="bd-row">
-              <span class="bd-label">AU · 30%</span>
+              <span class="bd-label">AU · 50%</span>
               <div class="bd-bar"><div class="bd-fill" id="bar-au" style="width: 10%; background: var(--severity-low);"></div></div>
               <span class="bd-pct" id="pct-au">0.1</span>
             </div>
             <div class="bd-row">
-              <span class="bd-label">EN · 25%</span>
+              <span class="bd-label">EN · 50%</span>
               <div class="bd-bar"><div class="bd-fill" id="bar-en" style="width: 10%; background: var(--severity-low);"></div></div>
               <span class="bd-pct" id="pct-en">0.1</span>
             </div>
-            <div class="bd-row">
-              <span class="bd-label">EX · 15%</span>
-              <div class="bd-bar"><div class="bd-fill" id="bar-ex" style="width: 78%; background: var(--severity-medium);"></div></div>
-              <span class="bd-pct" id="pct-ex">0.78</span>
-            </div>
-            <div class="bd-row">
-              <span class="bd-label">AN · 20%</span>
-              <div class="bd-bar"><div class="bd-fill" id="bar-an" style="width: 0%; background: var(--severity-low);"></div></div>
-              <span class="bd-pct" id="pct-an">0.0</span>
-            </div>
-            <div class="bd-row">
-              <span class="bd-label">BM · 10%</span>
-              <div class="bd-bar"><div class="bd-fill" id="bar-bm" style="width: 0%; background: var(--severity-low);"></div></div>
-              <span class="bd-pct" id="pct-bm">0.0</span>
-            </div>
+
+
+
           </div>
 
           <div class="calc-note">
-            Modelo extendido WSS: R = (0.30·AU + 0.25·EN + 0.15·EX + 0.20·AN + 0.10·BM) × 10.
+            WSS 2.0 = 10 × (0.50 × AU + 0.50 × EN). Coeficientes y umbrales heurísticos de la tesis, no probabilidades de ataque ni valores de CVSS.
             Esta demostración usa datos de ejemplo; no se conecta a ninguna red real.
           </div>
         </div>
@@ -1439,22 +1422,22 @@
         <div class="class-row">
           <div class="c-name"><span class="c-dot" style="background: var(--severity-low);"></span>Bajo</div>
           <div class="c-desc">Configuración alineada con buenas prácticas actuales (WPA3 o WPA2 con cifrado fuerte).</div>
-          <div class="c-range">0.0 – 2.5</div>
+          <div class="c-range">1.0 ≤ WSS ≤ 2.5</div>
         </div>
         <div class="class-row">
           <div class="c-name"><span class="c-dot" style="background: var(--severity-medium);"></span>Medio</div>
-          <div class="c-desc">Protección funcional, pero con margen de mejora en autenticación o exposición de señal.</div>
-          <div class="c-range">2.5 – 5.0</div>
+          <div class="c-desc">Protección funcional, pero con margen de mejora en autenticación o cifrado.</div>
+          <div class="c-range">2.5 &lt; WSS ≤ 5.0</div>
         </div>
         <div class="class-row">
           <div class="c-name"><span class="c-dot" style="background: var(--severity-high);"></span>Alto</div>
           <div class="c-desc">Cifrado obsoleto o configuración parcialmente desalineada de la línea base segura.</div>
-          <div class="c-range">5.0 – 7.5</div>
+          <div class="c-range">5.0 &lt; WSS ≤ 7.5</div>
         </div>
         <div class="class-row">
           <div class="c-name"><span class="c-dot" style="background: var(--severity-critical);"></span>Crítico</div>
-          <div class="c-desc">Red abierta, cifrado roto, o condición anómala de infraestructura confirmada.</div>
-          <div class="c-range">7.5 – 10.0</div>
+          <div class="c-desc">Configuración de elevada severidad relativa, como red abierta o WEP teórico; no confirma ataques.</div>
+          <div class="c-range">7.5 &lt; WSS ≤ 10.0</div>
         </div>
       </div>
     </div>
@@ -1566,7 +1549,7 @@
 
         <div class="real-results-layout">
           <div id="network-grid" class="network-grid" style="display:none;"></div>
-          <aside id="detail-panel" class="detail-panel" style="display:none;" aria-live="polite"></aside>
+
         </div>
       </div>
     </section>
@@ -1583,10 +1566,12 @@
     </div>
   </footer>
 
+  <aside id="detail-panel" class="detail-panel" style="display:none;" aria-live="polite"></aside>
+
   <script>
   (function () {
     // ---------- Model ----------
-    const WEIGHTS = { au: 0.30, en: 0.25, ex: 0.15, an: 0.20, bm: 0.10 };
+    const WEIGHTS = { au: 0.50, en: 0.50 };
 
     const SEVERITY = [
       { max: 2.5, key: 'low',      label: 'BAJO',     color: '#6FE3A6' },
@@ -1606,11 +1591,11 @@
     };
 
     const PRESETS = {
-      e1:  { au: '0.1', en: '0.1', rssi: -60, anomaly: false, ssidTag: 'WPA3 · CCMP' },
-      e2:  { au: '0.3', en: '0.1', rssi: -45, anomaly: false, ssidTag: 'WPA2 · AES' },
-      e3:  { au: '0.3', en: '0.8', rssi: -45, anomaly: false, ssidTag: 'WPA2 · TKIP' },
-      e5:  { au: '1.0', en: '1.0', rssi: -40, anomaly: false, ssidTag: 'Abierta' },
-      ean: { au: '0.3', en: '0.1', rssi: -45, anomaly: true,  ssidTag: 'WPA2 · CCMP (duplicado)' },
+      e1:  { au: '0.1', en: '0.1', rssi: -60, ssidTag: 'WPA3 · CCMP' },
+      e2:  { au: '0.3', en: '0.1', rssi: -45, ssidTag: 'WPA2 · AES' },
+      e3:  { au: '0.7', en: '0.8', rssi: -45, ssidTag: 'WPA · TKIP' },
+      e5:  { au: '1.0', en: '1.0', rssi: -40, ssidTag: 'Abierta' },
+      e4:  { au: '1.0', en: '0.9', rssi: -60, ssidTag: 'WEP teórico' },
     };
 
     function classifyExposure(rssi) {
@@ -1619,11 +1604,11 @@
       return 0.5;
     }
 
-    function determineBM(au, en, anomaly) {
+    function determineBM(au, en) {
       const secureAuth = au === '0.1' || au === '0.3';
       const secureCipher = en === '0.1';
-      if (secureAuth && secureCipher && !anomaly) return { label: 'ALIGNED', val: 0.0 };
-      if (secureCipher && !anomaly) return { label: 'PARTIAL', val: 0.5 };
+      if (secureAuth && secureCipher) return { label: 'ALIGNED', val: 0.0 };
+      if (secureCipher) return { label: 'PARTIAL', val: 0.5 };
       return { label: 'DEVIANT', val: 1.0 };
     }
 
@@ -1651,7 +1636,6 @@
     const rssiSlider = document.getElementById('rssi-slider');
     const rssiVal = document.getElementById('rssi-val');
     const rssiTag = document.getElementById('rssi-tag');
-    const anomalySwitch = document.getElementById('anomaly-switch');
 
     const scoreNum = document.getElementById('score-num');
     const severityBadge = document.getElementById('severity-badge');
@@ -1660,7 +1644,7 @@
 
     const ARC_LENGTH = 578; // ~ 2 * PI * 92
 
-    let state = { au: '0.3', en: '0.1', rssi: -45, anomaly: false };
+    let state = { au: '0.3', en: '0.1', rssi: -45 };
 
     function setActiveSeg(seg, value) {
       [...seg.children].forEach(btn => {
@@ -1685,11 +1669,9 @@
       const au = parseFloat(state.au);
       const en = parseFloat(state.en);
       const ex = classifyExposure(state.rssi);
-      const an = state.anomaly ? 1.0 : 0.0;
-      const bm = determineBM(state.au, state.en, state.anomaly);
+      const bm = determineBM(state.au, state.en);
 
-      const score = (WEIGHTS.au * au + WEIGHTS.en * en + WEIGHTS.ex * ex +
-                    WEIGHTS.an * an + WEIGHTS.bm * bm.val) * 10;
+      const score = Math.round((WEIGHTS.au * au + WEIGHTS.en * en) * 1000) / 100;
 
       const sev = severityFor(score);
 
@@ -1706,19 +1688,18 @@
 
       // Vector
       vectorOutput.textContent =
-        `WSS:1.0/AU:${au}/EN:${en}/EX:${ex.toFixed(2)}/AN:${an.toFixed(1)}/BM:${bm.label}`;
+        `WSS:2.0/AU:${au}/EN:${en}`;
 
       // Breakdown bars
       setBar('bar-au', 'pct-au', au);
       setBar('bar-en', 'pct-en', en);
-      setBar('bar-ex', 'pct-ex', ex);
-      setBar('bar-an', 'pct-an', an);
-      setBar('bar-bm', 'pct-bm', bm.val);
 
       // RSSI label
       rssiVal.textContent = state.rssi + ' dBm';
       const exLabel = ex === 1.0 ? 'ALTA' : ex === 0.8 ? 'MEDIA' : 'BAJA';
-      rssiTag.textContent = 'EX · ' + state.rssi + ' dBm (' + exLabel + ')';
+      rssiTag.textContent = 'Contexto · ' + state.rssi + ' dBm (' + exLabel + ')';
+      const alignment = { ALIGNED: 'Alineada', PARTIAL: 'Parcialmente alineada', DEVIANT: 'Desviada' };
+      document.getElementById('context-output').textContent = 'Alineación técnica: ' + alignment[bm.label] + ' (no modifica WSS).';
     }
 
     // ---------- Wire up controls ----------
@@ -1743,11 +1724,6 @@
       recalc();
     });
 
-    anomalySwitch.addEventListener('click', () => {
-      state.anomaly = !state.anomaly;
-      anomalySwitch.classList.toggle('on', state.anomaly);
-      recalc();
-    });
 
     document.querySelectorAll('.preset-chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -1756,12 +1732,10 @@
         state.au = preset.au;
         state.en = preset.en;
         state.rssi = preset.rssi;
-        state.anomaly = preset.anomaly;
 
         setActiveSeg(segAuth, state.au);
         setActiveSeg(segCipher, state.en);
         rssiSlider.value = state.rssi;
-        anomalySwitch.classList.toggle('on', state.anomaly);
 
         recalc();
 
@@ -1778,7 +1752,7 @@
     // ---------- Hero mini dial (decorative, mirrors a fixed example) ----------
     (function heroDial() {
       const mount = document.getElementById('hero-dial-mount');
-      const exampleScore = 2.3; // WPA2/CCMP, medium signal -> low-medium
+      const exampleScore = 2.0; // WSS 2.0: WPA2/CCMP
       const sev = severityFor(exampleScore);
       const offset = ARC_LENGTH - (exampleScore / 10) * ARC_LENGTH;
 
@@ -2133,6 +2107,7 @@
           });
         }
         toggle.addEventListener('click', () => {
+          if (activeDetailButton === toggle) { closeDetailPanel(); return; }
           document.querySelectorAll('.net-card').forEach(c => c.classList.remove('selected'));
           card.classList.add('selected');
           selectedIndex = index;
@@ -2165,15 +2140,18 @@
                 <div class="detail-classification" style="color:${presentation.color};">${escapeHtml(complete ? 'Clasificación técnica: ' + presentation.label : 'Evaluación incompleta')}</div>
                 <div class="detail-simple-status" style="color:${presentation.color};">${escapeHtml(presentation.simpleStatus)}</div>
               </div>
-              <button type="button" class="detail-close" id="detail-close-btn">Cerrar</button>
+              <button type="button" class="detail-close" id="detail-close-btn" aria-label="Cerrar informe técnico">Cerrar informe</button>
             </div>
           </div>
           <div class="detail-drawer-body" id="detail-drawer-body">
             ${renderDetail(net)}
           </div>
         `;
-        detailPanel.style.display = 'block';
+        detailPanel.style.display = 'flex';
+        detailPanel.setAttribute('role', 'region');
+        detailPanel.setAttribute('aria-label', 'Informe técnico');
         document.getElementById('detail-close-btn').addEventListener('click', closeDetailPanel);
+        document.getElementById('detail-close-btn').focus();
         setupDetailTabs();
         activateDetailTab('summary');
         const panelBody = document.getElementById('detail-drawer-body');
@@ -2217,7 +2195,7 @@
         activeDetailButton = null;
         document.querySelectorAll('.net-card').forEach(c => c.classList.remove('selected'));
         selectedIndex = null;
-        if (buttonToFocus) buttonToFocus.focus();
+        if (buttonToFocus && buttonToFocus.isConnected) buttonToFocus.focus();
       }
 
       function detailTabs() {
@@ -2330,15 +2308,11 @@
         `;
       }
 
-      function anDetailMessage(net) {
-        if (net.an === 0) return 'No se identificó una condición anómala.';
-        return net.observation_message || 'Condición anómala registrada.';
-      }
 
       function buildDisplayGroups(results) {
         const groups = new Map();
         results.forEach(net => {
-          const key = net.hidden_ssid ? net.bssid : net.ssid;
+          const key = net.hidden_ssid ? 'HIDDEN::' + net.bssid : 'SSID::' + net.ssid;
           if (!groups.has(key)) {
             groups.set(key, { ...net, group_items: [], observed_bands: [], observed_bssid_count: 0 });
           }
@@ -2400,9 +2374,8 @@
               ['Vector WSS', complete ? net.wss_vector : 'No se pudo completar la evaluación'],
               ['AU', net.au],
               ['EN', net.en],
-              ['EX', net.ex],
-              ['AN', net.an],
-              ['BM', net.bm_label || net.bm],
+              ['Exposición observable (contexto)', ({HIGH: 'Alta', MEDIUM: 'Media', LOW: 'Baja', UNKNOWN: 'No disponible'})[net.exposure_label] || 'No disponible'],
+              ['Alineación técnica (contexto)', ({ALIGNED: 'Alineada', PARTIAL: 'Parcialmente alineada', DEVIANT: 'Desviada'})[net.bm_label] || 'No disponible'],
             ])}
           </section>
 
@@ -2501,6 +2474,8 @@
         }
       });
 
+      document.querySelectorAll('.app-tab').forEach(tab => tab.addEventListener('click', closeDetailPanel));
+
       function setLoading(isLoading) {
         btnScan.classList.toggle('loading', isLoading);
         btnScan.disabled = isLoading;
@@ -2512,6 +2487,7 @@
       btnScan.addEventListener('click', () => {
         clearError();
         exportStatusBox.innerHTML = '';
+        renderResults([], null);
         setLoading(true);
 
         window.pywebview.api.scan_networks().then(response => {

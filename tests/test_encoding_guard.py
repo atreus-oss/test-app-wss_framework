@@ -20,7 +20,7 @@ EXPECTED_UTF8_TEXT = [
     "Cómo funciona",
     "Clasificación",
     "Evaluación pasiva · sin intrusión",
-    "Sabé qué tan expuesta está tu red Wi-Fi",
+    "¿Sabes qué tan expuesta está tu red Wi-Fi?",
     "Probar la calculadora →",
     "configuración",
     "inalámbrica",
@@ -28,7 +28,7 @@ EXPECTED_UTF8_TEXT = [
     "técnica",
     "severidad técnica",
     "CRITICO",
-    "No se identificó una condición anómala.",
+    "Exposición observable (contexto)",
     "1 radio observada",
     "radios observadas",
     "Se observaron varias radios compatibles con una red de doble banda.",
@@ -84,7 +84,7 @@ def test_index_html_uses_neutral_radio_and_an_labels():
     assert "BSSID/radios observadas" not in text
     assert "AN · Anomalía" not in text
     assert "radioCountLabel(net)" in text
-    assert "anDetailMessage(net)" in text
+    assert "anDetailMessage(net)" not in text
 
 
 def test_simple_card_omits_technical_wss_and_bssid_details():
@@ -138,7 +138,7 @@ def test_technical_details_control_is_real_button_with_aria_state_and_sidebar():
     assert "Detalles técnicos abiertos" in text
     assert "toggle.addEventListener('click'" in text
     assert "openDetailPanel(net, toggle)" in text
-    assert "detailPanel.style.display = 'block'" in text
+    assert "detailPanel.style.display = 'flex'" in text
     assert "position: fixed" in text
     assert "right: 0" in text
     assert "bottom: 0" in text
@@ -177,7 +177,7 @@ def test_sidebar_can_close_and_switch_between_networks():
     assert "resetDetailButtons()" in text
     assert "activeDetailButton = button" in text
     assert "selectedIndex = index" in text
-    assert "if (buttonToFocus) buttonToFocus.focus()" in text
+    assert "if (buttonToFocus && buttonToFocus.isConnected) buttonToFocus.focus()" in text
     assert "panelBody.scrollTop = 0" in text
     assert "activateDetailTab('summary')" in text
 

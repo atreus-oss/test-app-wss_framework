@@ -457,6 +457,8 @@ def normalize_result_for_report(result):
         "cipher_raw": result.get("cipher_raw"),
         "cipher_key": result.get("cipher_key"),
         "signal_pct": result.get("signal_pct"),
+        "rssi_dbm": result.get("rssi_dbm"),
+        "exposure_label": result.get("exposure_label"),
         "channel": result.get("channel"),
         "band": result.get("band"),
         "radio_type": result.get("radio_type"),
@@ -499,18 +501,12 @@ def normalize_result_for_report(result):
         output["wss_vector"] = result.get("wss_vector")
         output["au"] = result.get("au")
         output["en"] = result.get("en")
-        output["ex"] = result.get("ex")
-        output["an"] = result.get("an")
-        output["bm"] = result.get("bm")
         output["bm_label"] = result.get("bm_label")
     else:
         output["wss_score"] = None
         output["classification"] = "NO_EVALUABLE"
         output["au"] = result.get("au")
         output["en"] = result.get("en")
-        output["ex"] = result.get("ex")
-        output["an"] = result.get("an")
-        output["bm"] = result.get("bm")
         output["bm_label"] = result.get("bm_label")
     return output
 
@@ -566,6 +562,12 @@ def _pdf_text(value):
 
 
 class WssPdf(FPDF):
+    def multi_cell(self, *args, **kwargs):
+        # Los parrafos consecutivos deben empezar en el margen izquierdo.
+        kwargs.setdefault("new_x", "LMARGIN")
+        kwargs.setdefault("new_y", "NEXT")
+        return super().multi_cell(*args, **kwargs)
+
     def footer(self):
         self.set_y(-14)
         self.set_font("Helvetica", "", 8)
@@ -593,7 +595,7 @@ def _pdf_section(pdf, title, visible_text):
     _ensure_pdf_space(pdf, 14)
     pdf.set_font("Helvetica", "B", 12)
     pdf.set_fill_color(238, 242, 246)
-    pdf.cell(0, 7, _pdf_text(title), ln=1, fill=True)
+    pdf.cell(0, 7, _pdf_text(title), new_x="LMARGIN", new_y="NEXT", fill=True)
     visible_text.append(title)
 
 
@@ -601,7 +603,7 @@ def _pdf_badge(pdf, label, color):
     pdf.set_fill_color(*color)
     pdf.set_text_color(20, 24, 30)
     pdf.set_font("Helvetica", "B", 9)
-    pdf.cell(35, 7, _pdf_text(label), ln=0, align="C", fill=True)
+    pdf.cell(35, 7, _pdf_text(label), new_x="RIGHT", new_y="TOP", align="C", fill=True)
     pdf.set_text_color(20, 24, 30)
 
 
@@ -703,12 +705,12 @@ def build_pdf_report(results, metadata, anonymize=False, user_profile=DEFAULT_US
         pdf.ln(4)
         pdf.set_font("Helvetica", "B", 13)
         pdf.set_fill_color(248, 250, 252)
-        pdf.cell(0, 8, _pdf_text(f"Resultado por red {index}: {item.get('ssid')}"), ln=1, fill=True)
+        pdf.cell(0, 8, _pdf_text(f"Resultado por red {index}: {item.get('ssid')}"), new_x="LMARGIN", new_y="NEXT", fill=True)
         visible_text.append(f"Resultado por red {index}: {item.get('ssid')}")
         classification = item.get("classification") or "NO_EVALUABLE"
         score_text = "Sin puntaje" if item.get("wss_score") is None else str(item.get("wss_score")).replace(".", ",")
         pdf.set_font("Helvetica", "B", 20)
-        pdf.cell(30, 10, _pdf_text(score_text), ln=0)
+        pdf.cell(30, 10, _pdf_text(score_text), new_x="RIGHT", new_y="TOP")
         _pdf_badge(pdf, display_label(classification), _classification_color(classification))
         pdf.ln(12)
         _add_pdf_line(pdf, "Estado sencillo", item.get("simple_status"))
@@ -740,17 +742,16 @@ def build_pdf_report(results, metadata, anonymize=False, user_profile=DEFAULT_US
             ("Autenticación", f"{item.get('auth_raw')} ({item.get('auth_key')})"),
             ("Cifrado", f"{item.get('cipher_raw')} ({item.get('cipher_key')})"),
             ("Versión del esquema WSS", vector.get("schema_version")),
-            ("AU / EN / EX / AN / BM", (
-                f"{item.get('au')} / {item.get('en')} / {item.get('ex')} / "
-                f"{item.get('an')} / {display_label(item.get('bm_label') or item.get('bm'))}"
-            )),
+            ("AU / EN (pesos 50% / 50%)", f"{item.get('au')} / {item.get('en')}"),
+            ("Exposición observable (contexto)", {"HIGH": "Alta", "MEDIUM": "Media", "LOW": "Baja"}.get(item.get("exposure_label"), "No disponible")),
+            ("Alineación técnica (contexto)", display_label(item.get("bm_label"))),
         ]
         for label, value in technical_rows:
             _add_pdf_line(pdf, label, value)
 
         _ensure_pdf_space(pdf, 10 + (len(item.get("logical_radios", [])) * 6))
         pdf.set_font("Helvetica", "B", 9)
-        pdf.cell(0, 6, "Radios o puntos de acceso", ln=1)
+        pdf.cell(0, 6, "Radios o puntos de acceso", new_x="LMARGIN", new_y="NEXT")
         pdf.set_font("Helvetica", "", 8)
         for radio in item.get("logical_radios", []):
             row = (
@@ -786,7 +787,7 @@ def build_pdf_report(results, metadata, anonymize=False, user_profile=DEFAULT_US
             visible_text.append(practice)
 
     page_count = pdf.page_no()
-    raw_output = pdf.output(dest="S")
+    raw_output = pdf.output()
     pdf_bytes = raw_output.encode("latin-1") if isinstance(raw_output, str) else bytes(raw_output)
     return {
         "ok": True,
@@ -831,6 +832,8 @@ class WssApi:
         }
 
     def scan_networks(self):
+        self.last_results = []
+        self.last_metadata = None
         try:
             results = wss_engine.evaluate_networks(
                 source_type=SOURCE_LIVE_SCAN,

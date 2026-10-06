@@ -19,10 +19,10 @@ SSID 1 : LAB-DUAL
 
     assert len(results) == 2
     assert {item["observation_status"] for item in results} == {"MULTI_RADIO_OBSERVED"}
-    assert all(item["anomaly"] is False for item in results)
-    assert all(item["an"] == 0.0 for item in results)
+    assert all("anomaly" not in item for item in results)
+    assert all("an" not in item for item in results)
     assert all(item["bm_label"] == "ALIGNED" for item in results)
-    assert all(item["wss_score"] == 2.35 for item in results)
+    assert all(item["wss_score"] == 2.0 for item in results)
 
 
 def test_multi_ap_same_profile_is_not_attack_alert():
@@ -42,8 +42,8 @@ SSID 1 : LAB-MESH
     results = wss_engine.evaluate_networks(raw)
 
     assert {item["observation_status"] for item in results} == {"MULTI_AP_OBSERVED"}
-    assert all(item["anomaly"] is False for item in results)
-    assert all(item["an"] == 0.0 for item in results)
+    assert all("anomaly" not in item for item in results)
+    assert all("an" not in item for item in results)
     assert all("normal" in item["observation_message"] for item in results)
 
 
@@ -69,8 +69,8 @@ SSID 2 : LAB-MISMATCH
 
     assert {item["observation_status"] for item in results} == {"SECURITY_PROFILE_MISMATCH"}
     assert all(item["requires_technical_review"] is True for item in results)
-    assert all(item["anomaly"] is False for item in results)
-    assert all(item["an"] == 0.0 for item in results)
+    assert all("anomaly" not in item for item in results)
+    assert all("an" not in item for item in results)
     assert all("ataque" not in item["observation_message"].lower() for item in results)
 
 
@@ -102,5 +102,5 @@ SSID 3 :
     assert [item["ssid"] for item in results] == ["SSID oculto 1", "SSID oculto 2", "SSID oculto 3"]
     assert all(item["hidden_ssid"] is True for item in results)
     assert all(item["observation_status"] == "HIDDEN_SSID" for item in results)
-    assert all(item["anomaly"] is False for item in results)
-    assert all(item["an"] == 0.0 for item in results)
+    assert all("anomaly" not in item for item in results)
+    assert all("an" not in item for item in results)

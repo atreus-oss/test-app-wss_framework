@@ -37,13 +37,7 @@ OBSERVATION_MESSAGES = {
 # Modelo WSS - pesos y tablas de normalizacion
 # ---------------------------------------------------------------------------
 
-WEIGHTS = {
-    "au": 0.30,
-    "en": 0.25,
-    "ex": 0.15,
-    "an": 0.20,
-    "bm": 0.10,
-}
+WEIGHTS = {"au": 0.50, "en": 0.50}
 
 AUTH_VALUES = {
     "SAE": 0.1,        # WPA3-Personal
@@ -59,28 +53,11 @@ CIPHER_VALUES = {
     "NONE": 1.0,
 }
 
-EXPOSURE_VALUES = {
-    "HIGH": 1.0,
-    "MEDIUM": 0.8,
-    "LOW": 0.5,
-}
-
-ANOMALY_VALUES = {
-    "YES": 1.0,
-    "NO": 0.0,
-}
-
-BM_VALUES = {
-    "ALIGNED": 0.0,
-    "PARTIAL": 0.5,
-    "DEVIANT": 1.0,
-}
-
 
 def classify_exposure(rssi_dbm):
     """Clasifica el factor de exposicion EX a partir del RSSI medido."""
     if rssi_dbm is None:
-        return "LOW"
+        return "UNKNOWN"
     if rssi_dbm >= -50:
         return "HIGH"
     elif rssi_dbm >= -70:
@@ -88,32 +65,24 @@ def classify_exposure(rssi_dbm):
     return "LOW"
 
 
-def determine_bm(auth_key, cipher_key, anomaly):
+def determine_bm(auth_key, cipher_key):
     """
-    Determina el valor de benchmark (BM) comparando contra la linea base segura.
-    Linea base: WPA3-SAE o WPA2-PSK con cifrado CCMP, sin anomalia.
+    Describe la alineacion con una referencia tecnica; no calcula un factor ponderado.
+    Referencia descriptiva: WPA3-SAE o WPA2-PSK con CCMP. No modifica WSS.
     """
     secure_auth = auth_key in ("SAE", "WPA2-PSK")
     secure_cipher = cipher_key == "CCMP"
-    no_anomaly = not anomaly
 
-    if secure_auth and secure_cipher and no_anomaly:
+    if secure_auth and secure_cipher:
         return "ALIGNED"
-    elif secure_cipher and no_anomaly:
+    elif secure_cipher:
         return "PARTIAL"
     return "DEVIANT"
 
 
-def calculate_wss(au, en, ex, an, bm):
-    """Modelo extendido: R = (w1*AU + w2*EN + w3*EX + w4*AN + w5*BM) x 10"""
-    r = (
-        WEIGHTS["au"] * au +
-        WEIGHTS["en"] * en +
-        WEIGHTS["ex"] * ex +
-        WEIGHTS["an"] * an +
-        WEIGHTS["bm"] * bm
-    ) * 10
-    return round(r, 2)
+def calculate_wss(au, en):
+    """WSS 2.0: severidad tecnica relativa basada exclusivamente en AU y EN."""
+    return round(10 * (WEIGHTS["au"] * au + WEIGHTS["en"] * en), 2)
 
 
 def classify_score(score):
@@ -272,7 +241,8 @@ def parse_netsh_output(raw_output):
                 networks.append(current)
             ssid_name = ssid_match.group(1).strip()
             current = {
-                "ssid": ssid_name if ssid_name else "(SSID oculto)",
+                "ssid": ssid_name,
+                "hidden_ssid": not bool(ssid_name),
                 "auth_raw": None,
                 "cipher_raw": None,
                 "bssids": [],
@@ -285,8 +255,15 @@ def parse_netsh_output(raw_output):
 
         bssid_match = re.match(r"^BSSID\s+\d+\s*:\s*(.*)$", stripped)
         if bssid_match:
+            bssid = bssid_match.group(1).strip().lower()
+            # Un encabezado incompleto no acredita la presencia de una radio.
+            if not re.fullmatch(r"(?:[0-9a-f]{2}:){5}[0-9a-f]{2}", bssid) or bssid in {
+                "00:00:00:00:00:00", "ff:ff:ff:ff:ff:ff"
+            }:
+                current_bssid = None
+                continue
             current_bssid = {
-                "bssid": bssid_match.group(1).strip(),
+                "bssid": bssid,
                 "signal_pct": None,
                 "channel": None,
                 "band": None,
@@ -343,9 +320,29 @@ def parse_netsh_output(raw_output):
     if current and current.get("bssids"):
         networks.append(current)
 
+    # Preferir el nombre observado para la misma radio y perfil en esta captura.
+    # No inferir nombres entre capturas ni ocultar perfiles de seguridad distintos.
+    named_radios = {
+        (radio["bssid"], _map_auth(net["auth_raw"]), _map_cipher(net["cipher_raw"]))
+        for net in networks if not net["hidden_ssid"] for radio in net["bssids"]
+    }
+    seen = set()
+    clean_networks = []
+    for net in networks:
+        radios = []
+        for radio in net["bssids"]:
+            profile = (radio["bssid"], _map_auth(net["auth_raw"]), _map_cipher(net["cipher_raw"]))
+            identity = (net["ssid"], *profile)
+            if identity in seen or (net["hidden_ssid"] and profile in named_radios):
+                continue
+            seen.add(identity)
+            radios.append(radio)
+        if radios:
+            net["bssids"] = radios
+            clean_networks.append(net)
+    networks = clean_networks
     hidden_count = 0
     for net in networks:
-        net["hidden_ssid"] = net["ssid"] == "(SSID oculto)"
         if net["hidden_ssid"]:
             hidden_count += 1
             net["ssid"] = f"SSID oculto {hidden_count}"
@@ -410,11 +407,6 @@ def analyze_observations(networks):
     return observations
 
 
-def detect_anomalies(networks):
-    """Compatibilidad: AN=1 queda reservado y no se asigna automaticamente."""
-    return set()
-
-
 def evaluate_networks(
     raw_output=None,
     source_type="LIVE_SCAN",
@@ -425,7 +417,7 @@ def evaluate_networks(
 ):
     """
     Punto de entrada principal: escanea si no se provee raw_output, parsea,
-    detecta anomalias y calcula el WSS para cada BSSID evaluable.
+    describe infraestructura y calcula WSS 2.0 para cada BSSID evaluable.
     """
     if raw_output is None:
         raw_output = run_netsh_scan()
@@ -446,13 +438,10 @@ def evaluate_networks(
             "bands": [],
             "requires_review": False,
         })
-        is_anomalous_ssid = False
 
         for bssid_info in net["bssids"]:
             rssi = _signal_pct_to_rssi(bssid_info.get("signal_pct"))
             ex_label = classify_exposure(rssi)
-            ex_val = EXPOSURE_VALUES[ex_label]
-            an_val = ANOMALY_VALUES["YES"] if is_anomalous_ssid else ANOMALY_VALUES["NO"]
 
             unknown_fields = []
             if auth_key == "UNKNOWN":
@@ -464,7 +453,6 @@ def evaluate_networks(
                 au_val = None
                 en_val = None
                 bm_label = None
-                bm_val = None
                 score = None
                 classification = "NO_EVALUABLE"
                 vector = "INCOMPLETE"
@@ -472,14 +460,10 @@ def evaluate_networks(
             else:
                 au_val = AUTH_VALUES[auth_key]
                 en_val = CIPHER_VALUES[cipher_key]
-                bm_label = determine_bm(auth_key, cipher_key, is_anomalous_ssid)
-                bm_val = BM_VALUES[bm_label]
-                score = calculate_wss(au_val, en_val, ex_val, an_val, bm_val)
+                bm_label = determine_bm(auth_key, cipher_key)
+                score = calculate_wss(au_val, en_val)
                 classification = classify_score(score)
-                vector = (
-                    f"WSS:1.0/AU:{au_val}/EN:{en_val}/"
-                    f"EX:{ex_val}/AN:{an_val}/BM:{bm_label}"
-                )
+                vector = f"WSS:2.0/AU:{au_val}/EN:{en_val}"
                 evaluation_status = "COMPLETE"
 
             results.append({
@@ -497,7 +481,6 @@ def evaluate_networks(
                 "details": bssid_info.get("details"),
                 "rssi_dbm": rssi,
                 "exposure_label": ex_label,
-                "anomaly": is_anomalous_ssid,
                 "observation_status": observation["status"],
                 "observation_message": observation["message"],
                 "requires_technical_review": observation["requires_review"],
@@ -508,10 +491,7 @@ def evaluate_networks(
                 "unknown_fields": unknown_fields,
                 "au": au_val,
                 "en": en_val,
-                "ex": ex_val,
-                "an": an_val,
                 "bm_label": bm_label,
-                "bm": bm_val,
                 "wss_score": score,
                 "classification": classification,
                 "wss_vector": vector,
