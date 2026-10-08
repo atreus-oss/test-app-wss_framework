@@ -17,7 +17,7 @@ MOJIBAKE_PATTERNS = [
 ]
 
 EXPECTED_UTF8_TEXT = [
-    "Cómo funciona",
+    "Metodología",
     "Clasificación",
     "Evaluación pasiva · sin intrusión",
     "¿Sabes qué tan expuesta está tu red Wi-Fi?",
@@ -333,13 +333,13 @@ def test_multi_radio_observations_do_not_override_severity_color():
     assert "CLASSIFICATION_PRESENTATION.MULTI_AP_OBSERVED" not in text
 
 
-def test_global_navigation_switches_to_demo_view_before_scrolling():
+def test_global_navigation_selects_the_section_view_before_scrolling():
     text = Path("index.html").read_text(encoding="utf-8")
 
     for expected in [
         "function activateAppView(viewId)",
         "function scrollToDemoSection(sectionId)",
-        "activateAppView('view-demo')",
+        "activateAppView(sectionId === 'calculadora' ? 'view-demo' : 'view-method')",
         "target.scrollIntoView({ behavior: 'smooth', block: 'start' })",
         "['como-funciona', 'calculadora', 'clasificacion', 'beneficios'].includes(sectionId)",
         "document.querySelectorAll('a[href^=\"#\"]')",

@@ -6,7 +6,7 @@
   <title>WSS Framework — Evaluación de Severidad Wi-Fi</title>
   <style>
   /* ============================================================
-    WSS FRAMEWORK — Landing comercial + Calculadora interactiva
+    WSS FRAMEWORK — Interfaz de evaluación local
     Token system:
     Color   — fondo casi-negro #0B0E11, acento bajo #6FE3A6,
               medio #F2C45C, alto #FF9156, crítico #FF5640
@@ -16,7 +16,6 @@
     Layout  — Hero = la calculadora misma, dial de RF como signature
     ============================================================ */
 
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   :root {
     --bg: #0B0E11;
@@ -1193,49 +1192,179 @@
     }
   }
 
+  /* Workspace layout: local system fonts, persistent navigation, focused views. */
+  :root {
+    --bg: #101722; --bg-panel: #172130; --bg-panel-raised: #1e2b3c;
+    --line: #304052; --line-soft: #253345; --text: #edf2f8;
+    --text-dim: #aab9ca; --text-faint: #92a4b8;
+    --font-display: 'Segoe UI', sans-serif;
+    --font-body: 'Segoe UI', sans-serif;
+    --font-mono: Consolas, monospace;
+  }
+  .rf-field { display: none; }
+  .skip-link { position: fixed; left: 270px; top: -100px; z-index: 200; padding: 12px; background: var(--text); color: var(--bg); }
+  .skip-link:focus { top: 12px; }
+  .workspace-sidebar { position: fixed; inset: 0 auto 0 0; width: 242px; z-index: 50; padding: 30px 20px 22px; background: #0b111b; border-right: 1px solid var(--line-soft); display: flex; flex-direction: column; }
+  .workspace-brand { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 650; letter-spacing: -.3px; }
+  .workspace-brand small { display: block; margin-top: 3px; font-size: 11px; font-weight: 400; color: var(--text-dim); letter-spacing: .3px; }
+  .brand-mark { width: 36px; height: 36px; border-radius: 10px; background: #91dccd; color: #0b2623; font-size: 14px; }
+  .sidebar-caption { font-size: 10px; letter-spacing: 1.6px; color: var(--text-faint); margin: 48px 12px 16px; }
+  .workspace-nav { display: grid; gap: 7px; }
+  .workspace-nav .app-tab { width: 100%; display: block; text-align: left; padding: 13px 16px; font-size: 14px; font-weight: 600; border: 1px solid transparent; border-radius: 9px; color: #b6c3d3; }
+  .workspace-nav .app-tab span { display: block; margin-top: 4px; font-size: 11px; font-weight: 400; opacity: .75; }
+  .workspace-nav .app-tab.active { background: #17322f; border-color: #28564e; color: #a6efdb; }
+  .sidebar-model { margin: auto 10px 24px; padding-top: 32px; }
+  .sidebar-model > span { color: var(--text-faint); font-size: 10px; letter-spacing: 1.4px; }
+  .sidebar-model strong { display: block; margin: 10px 0; font-size: 16px; font-family: var(--font-mono); font-weight: 500; }
+  .sidebar-model i { font-style: normal; color: var(--text-faint); }
+  .sidebar-model p, .sidebar-foot { font-size: 11px; color: var(--text-faint); line-height: 1.8; }
+  .sidebar-foot { border-top: 1px solid var(--line-soft); padding: 18px 10px 0; }
+  .workspace-main { margin-left: 242px; min-height: 100vh; }
+  .workspace-topbar { padding: 20px 36px; border-bottom: 1px solid var(--line-soft); display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--text-dim); }
+  #workspace-location { color: var(--text); font-weight: 600; }
+  .workspace-status b { font-size: 10px; font-weight: 500; border: 1px solid var(--line); border-radius: 5px; padding: 4px 7px; margin-left: 14px; }
+  .wrap { max-width: 1400px; padding: 0 36px; }
+  section, #view-real > section { padding: 36px 0 !important; }
+  .hero { padding: 48px 0 28px; }
+  .hero-grid { grid-template-columns: minmax(0, 1.3fr) minmax(260px, .8fr); gap: 32px; align-items: center; }
+  .hero h1 { font-size: clamp(28px, 3.1vw, 44px); font-weight: 600; line-height: 1.16; letter-spacing: -1.5px; max-width: 620px; }
+  .eyebrow { font-size: 10px; letter-spacing: 1.2px; margin-bottom: 20px; }
+  .lede { font-size: 14px; line-height: 1.85; max-width: 570px; margin-top: 20px; }
+  .hero-actions { margin-top: 24px; gap: 10px; }
+  .hero-stats { margin-top: 32px; padding-top: 24px; gap: 30px; }
+  .stat .num { font-size: 23px; font-weight: 500; }
+  .stat .label { font-size: 11px; }
+  .dial-preview { border-radius: 14px; background: var(--bg-panel); box-shadow: none; padding: 22px; }
+  .dial-preview-head { flex-wrap: wrap; gap: 8px; }
+  .dial-preview-head .ssid { font-size: 11px; }
+  .dial-preview::before, .flow-step::after { display: none; }
+  .path-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+  .path-card { display: flex; flex-direction: column; color: var(--text); font-weight: 400; background: var(--bg-panel); border: 1px solid var(--line); border-radius: 12px; padding: 25px; transition: border-color .15s, background .15s; }
+  .path-card:hover { border-color: #73bdad; background: #1a2937; }
+  .path-card > span { font-size: 10px; color: #91dccd; letter-spacing: 1.6px; }
+  .path-card h2 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 18px 0 12px; }
+  .path-card p { font-size: 13px; color: var(--text-dim); line-height: 1.8; margin-bottom: 26px; }
+  .path-card strong { margin-top: auto; font-size: 12px; font-weight: 500; color: #a6efdb; }
+  .section-label { font-size: 10px; letter-spacing: 1.7px; color: #91dccd; margin-bottom: 10px; }
+  .section-title { font-size: clamp(24px, 2.5vw, 32px); font-weight: 600; letter-spacing: -.8px; }
+  .section-sub { font-size: 14px; max-width: 750px; line-height: 1.8; margin-bottom: 26px; }
+  .btn, .btn-scan { border-radius: 7px; font-size: 13px; padding: 12px 18px; }
+  .btn-primary, .btn-scan { background: #91dccd; color: #102b28; box-shadow: none; }
+  .btn-secondary-sm { padding: 10px 14px; border-radius: 7px; }
+  .flow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+  .flow-step { grid-column: span 2; padding: 22px; border-radius: 10px; background: var(--bg-panel); border: 1px solid var(--line); }
+  .flow-step:nth-child(-n+2) { grid-column: span 3; border-top: 2px solid #91dccd; }
+  .flow-step h3 { font-size: 17px; margin: 10px 0; }
+  .flow-step p { font-size: 13px; line-height: 1.75; }
+  .fkey { color: #91dccd; }
+  .preset-row { margin-bottom: 20px; gap: 8px; }
+  .preset-chip { border-radius: 6px; padding: 9px 12px; font-size: 11px; }
+  .calc-wrap { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border-radius: 12px; background: var(--bg-panel); }
+  .calc-inputs, .calc-output { padding: 28px; min-width: 0; }
+  .calc-output { background: #121d29; }
+  .seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; border-radius: 8px; background: #101722; }
+  .seg button { flex: 1 1 auto; }
+  .seg button { padding: 10px 9px; min-width: 55px; font-size: 12px; }
+  .seg button.active { background: #25453f; color: #b3f3de; }
+  .field { margin-bottom: 26px; }
+  .field-label .name { font-size: 13px; }
+  .calc-note { font-size: 12px; line-height: 1.8; }
+  .vector-box { background: #0d1722; border-radius: 8px; border-color: var(--line); }
+  .vb-value { overflow-wrap: anywhere; font-size: 13px; }
+  .vector-context { font-size: 11px; line-height: 1.9; }
+  .class-table { border-radius: 10px; background: var(--bg-panel); }
+  .class-row { grid-template-columns: 90px 1fr 150px; padding: 20px; }
+  .benefits { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+  .benefit-card { background: var(--bg-panel); border: 1px solid var(--line); border-radius: 10px; padding: 24px; }
+  .benefit-card h3 { font-size: 15px; }
+  .benefit-card p { font-size: 13px; line-height: 1.8; }
+  .scan-toolbar { border: 1px solid var(--line); border-radius: 12px; background: var(--bg-panel); padding: 20px; gap: 12px; }
+  .scan-status { width: 100%; margin-left: 0; padding-top: 14px; border-top: 1px solid var(--line-soft); flex-wrap: wrap; gap: 10px; }
+  .scan-empty { border: 1px dashed #3d5067; border-radius: 12px; padding: 70px 24px; margin: 24px 0; background: #131e2b; }
+  .empty-label { display: inline-block; font-size: 10px; letter-spacing: 1.5px; border: 1px solid var(--line); padding: 6px 12px; border-radius: 5px; color: var(--text-dim); margin-bottom: 20px; }
+  .scan-empty .se-title { font-size: 20px; font-weight: 500; }
+  .network-grid { gap: 18px; margin-top: 24px; }
+  .net-card { border-radius: 12px; background: var(--bg-panel); box-shadow: none; }
+  .detail-panel { top: 0; background: #15202e; border-left: 1px solid #43546a; box-shadow: -24px 0 70px #0006; z-index: 100; }
+  .detail-drawer-head { background: #111b28; }
+  footer { margin-top: 32px; padding: 22px 0; }
+  .footer-meta, .footer-links { font-size: 11px; }
+  .reveal { opacity: 1; transform: none; }
+  @media (min-width: 1600px) { .workspace-main > .view { max-width: 1500px; margin: auto; } }
+  @media (max-width: 1150px) {
+    .workspace-sidebar { width: 210px; padding-left: 14px; padding-right: 14px; }
+    .workspace-main { margin-left: 210px; }
+    .wrap { padding: 0 24px; }
+    .hero-grid { grid-template-columns: 1fr; }
+    .dial-preview { display: none; }
+    .calc-inputs, .calc-output { padding: 20px; }
+    .path-grid, .benefits { grid-template-columns: 1fr; }
+    .path-card { padding: 22px; }
+    .path-card h2 { margin: 10px 0; }
+    .path-card p { margin-bottom: 16px; }
+  }
+  @media (max-width: 800px) {
+    .workspace-sidebar { position: static; width: auto; padding: 16px 20px; }
+    .workspace-brand { font-size: 15px; }
+    .workspace-main { margin-left: 0; }
+    .sidebar-caption, .sidebar-model, .sidebar-foot { display: none; }
+    .workspace-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 18px; }
+    .workspace-nav .app-tab { text-align: center; padding: 11px 4px; font-size: 11px; }
+    .workspace-nav .app-tab span { display: none; }
+    .workspace-topbar { padding: 15px 20px; }
+    .workspace-status { font-size: 11px; }
+    .wrap { padding: 0 20px; }
+    .hero { padding-top: 30px; }
+    .hero h1 { font-size: 32px; }
+    .hero-stats { gap: 20px; flex-wrap: wrap; }
+    .calc-wrap { grid-template-columns: 1fr; }
+    .calc-inputs { border-right: 0; border-bottom: 1px solid var(--line); }
+    .flow { grid-template-columns: 1fr; }
+    .flow-step, .flow-step:nth-child(-n+2) { grid-column: auto; }
+    .class-row { grid-template-columns: 1fr; gap: 10px; }
+    .scan-toolbar { align-items: stretch; }
+    .scan-toolbar > button { width: 100%; }
+    .scan-status { align-items: flex-start; }
+    .pf-pill { max-width: 100%; white-space: normal; }
+    .skip-link { left: 20px; }
+    .footer-links { flex-wrap: wrap; }
+  }
+
   </style>
   </head>
   <body>
+  <a class="skip-link" href="#main-content">Saltar al contenido</a>
 
   <div class="rf-field"></div>
 
-  <nav class="nav">
-    <div class="wrap nav-inner">
-      <div class="brand">
-        <div class="brand-mark">WS</div>
-        WSS Framework
-      </div>
-      <div class="nav-links">
-        <a href="#como-funciona">Cómo funciona</a>
-        <a href="#calculadora">Calculadora</a>
-        <a href="#clasificacion">Clasificación</a>
-        <a href="#beneficios">Beneficios</a>
-      </div>
-      <a href="#calculadora" class="nav-cta">Probar ahora</a>
+  <nav class="workspace-sidebar" aria-label="Navegación principal">
+    <a class="workspace-brand" href="#inicio"><span class="brand-mark">WS</span><span>WSS Framework<small>Evaluación Wi-Fi · 2.0</small></span></a>
+    <div class="sidebar-caption">ESPACIO DE TRABAJO</div>
+    <div class="workspace-nav">
+      <button class="app-tab active" data-view="view-home" aria-current="page">Inicio<span>Vista general</span></button>
+      <button class="app-tab" data-view="view-real">Mis redes<span>Análisis e informes</span></button>
+      <button class="app-tab" data-view="view-demo">Demostración<span>Explorar el modelo</span></button>
+      <button class="app-tab" data-view="view-method">Metodología<span>Criterios y alcance</span></button>
     </div>
+    <div class="sidebar-model"><span>MODELO WSS 2.0</span><strong>50% AU <i>+ </i>50% EN</strong><p>Autenticación y cifrado.<br>Un criterio reproducible.</p></div>
+    <div class="sidebar-foot">Universidad del Norte<br>Facultad de Ingeniería · 2026</div>
   </nav>
-
-  <div class="app-tabs">
-    <div class="wrap app-tabs-inner">
-      <button class="app-tab active" data-view="view-demo">Calculadora Demo</button>
-      <button class="app-tab" data-view="view-real"><span class="dot-live"></span> Mis Redes</button>
-    </div>
-  </div>
-
-  <div id="view-demo" class="view active">
-
+  <main class="workspace-main" id="main-content">
+    <div class="workspace-topbar"><span id="workspace-location">Inicio</span><span class="workspace-status">Evaluación local <b>WSS 2.0</b></span></div>
+  <div id="view-home" class="view active" tabindex="-1">
   <header class="hero">
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow"><span class="eyebrow-dot"></span> Evaluación pasiva · sin intrusión</div>
-        <h1>¿Sabes qué tan expuesta está tu red Wi-Fi?<span class="accent">.</span></h1>
+        <h1>¿Sabes qué tan expuesta está tu red Wi-Fi?</h1>
         <p class="lede">
           WSS Framework traduce la configuración de tu red inalámbrica —autenticación y cifrado—
           en un puntaje de severidad técnica relativa de 1.0 a 10.0, sin ejecutar ninguna prueba activa sobre tu infraestructura.
         </p>
         <div class="hero-actions">
-          <a href="#calculadora" class="btn btn-primary">Probar la calculadora →</a>
-          <a href="#como-funciona" class="btn btn-ghost">Cómo funciona</a>
+          <a href="#redes" class="btn btn-primary nav-cta">Analizar mis redes</a>
+          <a href="#calculadora" class="btn btn-ghost">Probar la calculadora →</a>
+          
         </div>
         <div class="hero-stats">
           <div class="stat">
@@ -1255,7 +1384,7 @@
 
       <div class="dial-preview">
         <div class="dial-preview-head">
-          <div class="ssid">Evaluando: <b>OFICINA-WIFI</b></div>
+          <div class="ssid">Ejemplo ilustrativo: <b>OFICINA-WIFI</b></div>
           <div class="tag">WPA2 · AES-CCMP</div>
         </div>
         <div id="hero-dial-mount"></div>
@@ -1265,48 +1394,23 @@
       </div>
     </div>
   </header>
-
-  <section id="como-funciona">
-    <div class="wrap">
-      <div class="section-label">Metodología</div>
-      <h2 class="section-title">Autenticación y cifrado. Un puntaje reproducible.</h2>
-      <p class="section-sub">
-        El modelo no requiere conectarse de forma intrusiva ni interceptar tráfico. Lee únicamente lo que cualquier
-        punto de acceso ya transmite públicamente, y lo convierte en un indicador técnico estructurado.
-      </p>
-
-      <div class="flow reveal">
-        <div class="flow-step">
-          <div class="fkey">01 · AU</div>
-          <h3>Autenticación</h3>
-          <p>Identifica el mecanismo de acceso: WPA3-SAE, WPA2-PSK, WPA o red abierta. Aporta el 50% del puntaje WSS 2.0.</p>
-        </div>
-        <div class="flow-step">
-          <div class="fkey">02 · EN</div>
-          <h3>Cifrado</h3>
-          <p>Evalúa el esquema de protección de datos: AES-CCMP, TKIP, WEP o ausencia de cifrado. Aporta el 50% del puntaje WSS 2.0.</p>
-        </div>
-        <div class="flow-step">
-          <div class="fkey">03 · EX</div>
-          <h3>Exposición</h3>
-          <p>Describe la intensidad de señal observada (RSSI) como contexto. No modifica el puntaje ni mide distancia o accesibilidad real.</p>
-        </div>
-        <div class="flow-step">
-          <div class="fkey">04 · AN</div>
-          <h3>Anomalía</h3>
-          <p>Fuera del modelo WSS 2.0: no se evalúan anomalías de ataque. Varios BSSID bajo un mismo SSID son observaciones de infraestructura, no ataques confirmados.</p>
-        </div>
-        <div class="flow-step">
-          <div class="fkey">05 · BM</div>
-          <h3>Benchmark</h3>
-          <p>Compara con WPA2/WPA3-Personal y AES-CCMP de forma descriptiva, sin modificar el puntaje.</p>
-        </div>
-      </div>
-      <p class="calc-note">Las cinco tarjetas conservan la presentación del proyecto. Solo AU y EN son métricas ponderadas de WSS 2.0 (50% cada una). EX y BM son contexto; AN no es una métrica vigente ni una capacidad de detección.</p>
+  <section class="home-paths"><div class="wrap">
+    <div class="section-label">Tu siguiente paso</div>
+    <div class="path-grid">
+      <a href="#redes" class="path-card nav-cta"><span>ANÁLISIS</span><h2>Observa tu entorno Wi-Fi</h2><p>Escanea desde Windows o carga una captura TXT. Revisa cada red y exporta su informe.</p><strong>Abrir Mis redes →</strong></a>
+      <a href="#calculadora" class="path-card"><span>DEMOSTRACIÓN</span><h2>Comprende el puntaje</h2><p>Compara configuraciones de ejemplo y descubre cómo influyen la autenticación y el cifrado.</p><strong>Explorar escenarios →</strong></a>
+      <a href="#como-funciona" class="path-card"><span>METODOLOGÍA</span><h2>Conoce el alcance</h2><p>Consulta los componentes, la escala de severidad y los límites de la evaluación.</p><strong>Leer los criterios →</strong></a>
     </div>
-  </section>
+  </div></section>
+  </div>
 
-  <div class="wrap"><div class="divider"></div></div>
+  <div id="view-demo" class="view">
+
+
+
+
+
+
 
   <section id="calculadora">
     <div class="wrap">
@@ -1426,91 +1530,13 @@
     </div>
   </section>
 
-  <div class="wrap"><div class="divider"></div></div>
 
-  <section id="clasificacion">
-    <div class="wrap">
-      <div class="section-label">Escala de severidad</div>
-      <h2 class="section-title">Cuatro niveles, un mismo criterio en toda tu organización</h2>
-      <p class="section-sub">
-        Cada red evaluada cae en una de cuatro categorías, lo que permite priorizar qué configuraciones revisar primero
-        sin tener que interpretar números sueltos.
-      </p>
 
-      <div class="class-table reveal">
-        <div class="class-row">
-          <div class="c-name"><span class="c-dot" style="background: var(--severity-low);"></span>Bajo</div>
-          <div class="c-desc">Configuración alineada con buenas prácticas actuales (WPA3 o WPA2 con cifrado fuerte).</div>
-          <div class="c-range">1.0 ≤ WSS ≤ 2.5</div>
-        </div>
-        <div class="class-row">
-          <div class="c-name"><span class="c-dot" style="background: var(--severity-medium);"></span>Medio</div>
-          <div class="c-desc">Protección funcional, pero con margen de mejora en autenticación o cifrado.</div>
-          <div class="c-range">2.5 &lt; WSS ≤ 5.0</div>
-        </div>
-        <div class="class-row">
-          <div class="c-name"><span class="c-dot" style="background: var(--severity-high);"></span>Alto</div>
-          <div class="c-desc">Cifrado obsoleto o configuración parcialmente desalineada de la línea base segura.</div>
-          <div class="c-range">5.0 &lt; WSS ≤ 7.5</div>
-        </div>
-        <div class="class-row">
-          <div class="c-name"><span class="c-dot" style="background: var(--severity-critical);"></span>Crítico</div>
-          <div class="c-desc">Configuración de elevada severidad relativa, como red abierta o WEP teórico; no confirma ataques.</div>
-          <div class="c-range">7.5 &lt; WSS ≤ 10.0</div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <section id="beneficios">
-    <div class="wrap">
-      <div class="section-label">Para tu organización</div>
-      <h2 class="section-title">Diseñado para empresas que ya usan Windows</h2>
-      <p class="section-sub">
-        No necesitás personal especializado en seguridad ofensiva ni un sistema operativo distinto al que ya usás todos los días.
-      </p>
 
-      <div class="benefits reveal">
-        <div class="benefit-card">
-          <h3>Sin instalación compleja</h3>
-          <p>Corre de forma local en Windows, leyendo únicamente los parámetros que tu propio sistema ya expone.</p>
-        </div>
-        <div class="benefit-card">
-          <h3>No intrusivo por diseño</h3>
-          <p>No ejecuta pruebas activas, no captura credenciales y no interfiere con el tráfico de tu red.</p>
-        </div>
-        <div class="benefit-card">
-          <h3>Reportes listos para compartir</h3>
-          <p>Exportación directa en JSON y PDF, con el vector WSS completo para trazabilidad técnica.</p>
-        </div>
-        <div class="benefit-card">
-          <h3>Criterio consistente</h3>
-          <p>El mismo modelo de puntuación se aplica a todas las redes evaluadas, sin juicios subjetivos.</p>
-        </div>
-        <div class="benefit-card">
-          <h3>Alertas de infraestructura</h3>
-          <p>Identifica condiciones como duplicidad de SSID que merecen revisión técnica inmediata.</p>
-        </div>
-        <div class="benefit-card">
-          <h3>Validado experimentalmente</h3>
-          <p>El modelo fue probado en escenarios controlados que cubren todo el espectro de severidad.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <section>
-    <div class="wrap">
-      <div class="cta-band reveal">
-        <h2>¿Querés evaluar tu red ahora?</h2>
-        <p>Probá la calculadora con tu propia configuración o conversemos sobre cómo implementarlo en tu organización.</p>
-        <div class="hero-actions" style="justify-content: center;">
-          <a href="#calculadora" class="btn btn-primary">Ir a la calculadora →</a>
-          <a href="#" class="btn btn-ghost">Contactar al equipo</a>
-        </div>
-      </div>
-    </div>
-  </section>
+
+
 
   </div><!-- /#view-demo -->
 
@@ -1554,7 +1580,7 @@
         <div id="export-status-box"></div>
 
         <div id="scan-empty" class="scan-empty">
-          <div class="se-icon">◌</div>
+          <div class="empty-label">SIN OBSERVACIONES</div>
           <div class="se-title">Todavía no escaneaste ninguna red</div>
           <div class="se-sub">Presioná "Escanear redes" para detectar los puntos de acceso visibles
             desde este equipo y calcular su severidad técnica.</div>
@@ -1568,6 +1594,84 @@
     </section>
   </div><!-- /#view-real -->
 
+<div id="view-method" class="view">  <section id="como-funciona">
+    <div class="wrap">
+      <div class="section-label">Metodología</div>
+      <h2 class="section-title">Autenticación y cifrado. Un puntaje reproducible.</h2>
+      <p class="section-sub">
+        El modelo utiliza los parámetros de autenticación y cifrado expuestos por Windows.
+        La señal y la información de infraestructura se presentan por separado, como contexto.
+      </p>
+
+      <div class="flow reveal">
+        <div class="flow-step">
+          <div class="fkey">01 · AU</div>
+          <h3>Autenticación</h3>
+          <p>Identifica el mecanismo de acceso: WPA3-SAE, WPA2-PSK, WPA o red abierta. Aporta el 50% del puntaje WSS 2.0.</p>
+        </div>
+        <div class="flow-step">
+          <div class="fkey">02 · EN</div>
+          <h3>Cifrado</h3>
+          <p>Evalúa el esquema de protección de datos: AES-CCMP, TKIP, WEP o ausencia de cifrado. Aporta el 50% del puntaje WSS 2.0.</p>
+        </div>
+        <div class="flow-step">
+          <div class="fkey">03 · EX</div>
+          <h3>Exposición</h3>
+          <p>Describe la intensidad de señal observada (RSSI) como contexto. No modifica el puntaje ni mide distancia o accesibilidad real.</p>
+        </div>
+        <div class="flow-step">
+          <div class="fkey">04 · AN</div>
+          <h3>Anomalía</h3>
+          <p>Fuera del modelo WSS 2.0: no se evalúan anomalías de ataque. Varios BSSID bajo un mismo SSID son observaciones de infraestructura, no ataques confirmados.</p>
+        </div>
+        <div class="flow-step">
+          <div class="fkey">05 · BM</div>
+          <h3>Benchmark</h3>
+          <p>Compara con WPA2/WPA3-Personal y AES-CCMP de forma descriptiva, sin modificar el puntaje.</p>
+        </div>
+      </div>
+      <p class="calc-note">Las cinco tarjetas conservan la presentación del proyecto. Solo AU y EN son métricas ponderadas de WSS 2.0 (50% cada una). EX y BM son contexto; AN no es una métrica vigente ni una capacidad de detección.</p>
+    </div>
+  </section>
+  <section id="clasificacion">
+    <div class="wrap">
+      <div class="section-label">Escala de severidad</div>
+      <h2 class="section-title">Cuatro niveles, un mismo criterio en toda tu organización</h2>
+      <p class="section-sub">
+        Cada red evaluada cae en una de cuatro categorías, lo que permite priorizar qué configuraciones revisar primero
+        sin tener que interpretar números sueltos.
+      </p>
+
+      <div class="class-table reveal">
+        <div class="class-row">
+          <div class="c-name"><span class="c-dot" style="background: var(--severity-low);"></span>Bajo</div>
+          <div class="c-desc">Configuración alineada con buenas prácticas actuales (WPA3 o WPA2 con cifrado fuerte).</div>
+          <div class="c-range">1.0 ≤ WSS ≤ 2.5</div>
+        </div>
+        <div class="class-row">
+          <div class="c-name"><span class="c-dot" style="background: var(--severity-medium);"></span>Medio</div>
+          <div class="c-desc">Protección funcional, pero con margen de mejora en autenticación o cifrado.</div>
+          <div class="c-range">2.5 &lt; WSS ≤ 5.0</div>
+        </div>
+        <div class="class-row">
+          <div class="c-name"><span class="c-dot" style="background: var(--severity-high);"></span>Alto</div>
+          <div class="c-desc">Cifrado obsoleto o configuración parcialmente desalineada de la línea base segura.</div>
+          <div class="c-range">5.0 &lt; WSS ≤ 7.5</div>
+        </div>
+        <div class="class-row">
+          <div class="c-name"><span class="c-dot" style="background: var(--severity-critical);"></span>Crítico</div>
+          <div class="c-desc">Configuración de elevada severidad relativa, como red abierta o WEP teórico; no confirma ataques.</div>
+          <div class="c-range">7.5 &lt; WSS ≤ 10.0</div>
+        </div>
+      </div>
+    </div>
+  </section>
+<section id="beneficios"><div class="wrap"><div class="section-label">Capacidades y límites</div><h2 class="section-title">Qué puedes esperar de la evaluación</h2><div class="benefits"><div class="benefit-card"><h3>Ejecución local en Windows</h3><p>Analiza los parámetros Wi-Fi que Windows expone mediante netsh y presenta los resultados en una interfaz local.</p></div>
+<div class="benefit-card"><h3>Evaluación sin pruebas de intrusión</h3><p>No intenta acceder a las redes, obtener contraseñas ni explotar vulnerabilidades. Evalúa la configuración observada.</p></div>
+<div class="benefit-card"><h3>Informes con trazabilidad</h3><p>Exporta resultados en JSON y PDF con el vector WSS, los parámetros evaluados y el detalle técnico de las observaciones.</p></div>
+<div class="benefit-card"><h3>Puntuación reproducible</h3><p>Aplica los mismos criterios de autenticación y cifrado, con pesos del 50% cada uno. Los mismos valores AU y EN producen el mismo puntaje.</p></div>
+<div class="benefit-card"><h3>Contexto para interpretar resultados</h3><p>Muestra la intensidad de señal y las radios observadas para apoyar la revisión técnica, sin modificar el puntaje WSS.</p></div>
+<div class="benefit-card"><h3>Alcance definido</h3><p>El puntaje describe la severidad de la configuración de autenticación y cifrado. No confirma ataques ni sustituye una auditoría de seguridad.</p></div></div></div></section></div>
   <footer>
     <div class="wrap footer-inner">
       <div class="footer-meta">WSS Framework — Universidad del Norte, Facultad de Ingeniería · 2026</div>
@@ -1578,6 +1682,7 @@
       </div>
     </div>
   </footer>
+  </main>
 
   <aside id="detail-panel" class="detail-panel" style="display:none;" aria-live="polite"></aside>
 
@@ -1824,12 +1929,20 @@
     const views = document.querySelectorAll('.view');
 
     function activateAppView(viewId) {
-      tabs.forEach(t => t.classList.toggle('active', t.dataset.view === viewId));
+      tabs.forEach(t => {
+        const selected = t.dataset.view === viewId;
+        t.classList.toggle('active', selected);
+        if (selected) t.setAttribute('aria-current', 'page');
+        else t.removeAttribute('aria-current');
+      });
+      const labels = { 'view-home': 'Inicio', 'view-real': 'Mis redes', 'view-demo': 'Demostración', 'view-method': 'Metodología' };
+      document.getElementById('workspace-location').textContent = labels[viewId];
+      window.scrollTo({ top: 0, behavior: 'instant' });
       views.forEach(v => v.classList.toggle('active', v.id === viewId));
     }
 
     function scrollToDemoSection(sectionId) {
-      activateAppView('view-demo');
+      activateAppView(sectionId === 'calculadora' ? 'view-demo' : 'view-method');
       requestAnimationFrame(() => {
         const target = document.getElementById(sectionId);
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1851,6 +1964,10 @@
     document.querySelectorAll('a[href^="#"]').forEach(link => {
       link.addEventListener('click', event => {
         const sectionId = link.getAttribute('href').slice(1);
+        if (sectionId === 'inicio') {
+          event.preventDefault();
+          activateAppView('view-home');
+        }
         if (['como-funciona', 'calculadora', 'clasificacion', 'beneficios'].includes(sectionId)) {
           event.preventDefault();
           scrollToDemoSection(sectionId);
