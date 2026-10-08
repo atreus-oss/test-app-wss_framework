@@ -1256,7 +1256,7 @@
       <div class="dial-preview">
         <div class="dial-preview-head">
           <div class="ssid">Evaluando: <b>OFICINA-WIFI</b></div>
-          <div class="tag">WPA2 · CCMP</div>
+          <div class="tag">WPA2 · AES-CCMP</div>
         </div>
         <div id="hero-dial-mount"></div>
         <div class="vector-line">
@@ -1284,7 +1284,7 @@
         <div class="flow-step">
           <div class="fkey">02 · EN</div>
           <h3>Cifrado</h3>
-          <p>Evalúa el esquema de protección de datos: CCMP, TKIP, WEP o ausencia de cifrado. Aporta el 50% del puntaje WSS 2.0.</p>
+          <p>Evalúa el esquema de protección de datos: AES-CCMP, TKIP, WEP o ausencia de cifrado. Aporta el 50% del puntaje WSS 2.0.</p>
         </div>
         <div class="flow-step">
           <div class="fkey">03 · EX</div>
@@ -1299,7 +1299,7 @@
         <div class="flow-step">
           <div class="fkey">05 · BM</div>
           <h3>Benchmark</h3>
-          <p>Compara con WPA2/WPA3-Personal y CCMP de forma descriptiva, sin modificar el puntaje.</p>
+          <p>Compara con WPA2/WPA3-Personal y AES-CCMP de forma descriptiva, sin modificar el puntaje.</p>
         </div>
       </div>
       <p class="calc-note">Las cinco tarjetas conservan la presentación del proyecto. Solo AU y EN son métricas ponderadas de WSS 2.0 (50% cada una). EX y BM son contexto; AN no es una métrica vigente ni una capacidad de detección.</p>
@@ -1318,8 +1318,8 @@
       </p>
 
       <div class="preset-row reveal">
-        <button class="preset-chip" data-preset="e1">WPA3 + CCMP (menor severidad)</button>
-        <button class="preset-chip" data-preset="e2">WPA2 + AES (uso común)</button>
+        <button class="preset-chip" data-preset="e1">WPA3 + AES-CCMP (menor severidad)</button>
+        <button class="preset-chip" data-preset="e2">WPA2 + AES-CCMP (uso común)</button>
         <button class="preset-chip" data-preset="e3">WPA versión 1 + TKIP</button>
         <button class="preset-chip" data-preset="e5">Red abierta (sin protección)</button>
         <button class="preset-chip" data-preset="e4">WEP (caso teórico)</button>
@@ -1347,11 +1347,12 @@
               <span class="tag">EN</span>
             </div>
             <div class="seg" id="seg-cipher">
-              <button data-val="0.1" data-label="CCMP">CCMP</button>
+              <button data-val="0.1" data-label="CCMP" aria-describedby="cipher-help">AES-CCMP</button>
               <button data-val="0.8" data-label="TKIP">TKIP</button>
               <button data-val="0.9" data-label="WEP">WEP</button>
               <button data-val="1.0" data-label="NONE">Ninguno</button>
             </div>
+            <p class="calc-note" id="cipher-help">AES-CCMP: utiliza el algoritmo AES para proteger la confidencialidad e integridad de los datos.</p>
           </div>
 
           <div class="field">
@@ -1471,32 +1472,26 @@
 
       <div class="benefits reveal">
         <div class="benefit-card">
-          <div class="b-icon">①</div>
           <h3>Sin instalación compleja</h3>
           <p>Corre de forma local en Windows, leyendo únicamente los parámetros que tu propio sistema ya expone.</p>
         </div>
         <div class="benefit-card">
-          <div class="b-icon">②</div>
           <h3>No intrusivo por diseño</h3>
           <p>No ejecuta pruebas activas, no captura credenciales y no interfiere con el tráfico de tu red.</p>
         </div>
         <div class="benefit-card">
-          <div class="b-icon">③</div>
           <h3>Reportes listos para compartir</h3>
           <p>Exportación directa en JSON y PDF, con el vector WSS completo para trazabilidad técnica.</p>
         </div>
         <div class="benefit-card">
-          <div class="b-icon">④</div>
           <h3>Criterio consistente</h3>
           <p>El mismo modelo de puntuación se aplica a todas las redes evaluadas, sin juicios subjetivos.</p>
         </div>
         <div class="benefit-card">
-          <div class="b-icon">⑤</div>
           <h3>Alertas de infraestructura</h3>
           <p>Identifica condiciones como duplicidad de SSID que merecen revisión técnica inmediata.</p>
         </div>
         <div class="benefit-card">
-          <div class="b-icon">⑥</div>
           <h3>Validado experimentalmente</h3>
           <p>El modelo fue probado en escenarios controlados que cubren todo el espectro de severidad.</p>
         </div>
@@ -1609,8 +1604,8 @@
     };
 
     const PRESETS = {
-      e1:  { au: '0.1', en: '0.1', rssi: -60, ssidTag: 'WPA3 · CCMP' },
-      e2:  { au: '0.3', en: '0.1', rssi: -45, ssidTag: 'WPA2 · AES' },
+      e1:  { au: '0.1', en: '0.1', rssi: -60, ssidTag: 'WPA3 · AES-CCMP' },
+      e2:  { au: '0.3', en: '0.1', rssi: -45, ssidTag: 'WPA2 · AES-CCMP' },
       e3:  { au: '0.7', en: '0.8', rssi: -45, ssidTag: 'WPA · TKIP' },
       e5:  { au: '1.0', en: '1.0', rssi: -40, ssidTag: 'Abierta' },
       e4:  { au: '1.0', en: '0.9', rssi: -60, ssidTag: 'WEP teórico' },
