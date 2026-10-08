@@ -541,6 +541,17 @@
     line-height: 1.6;
   }
 
+  .vector-context {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+  .vector-context strong { color: var(--text); }
+
   .breakdown {
     margin-top: 20px;
     display: flex;
@@ -1268,29 +1279,30 @@
         <div class="flow-step">
           <div class="fkey">01 · AU</div>
           <h3>Autenticación</h3>
-          <p>Identifica el mecanismo de acceso: WPA3-SAE, WPA2-PSK, WPA o red abierta.</p>
+          <p>Identifica el mecanismo de acceso: WPA3-SAE, WPA2-PSK, WPA o red abierta. Aporta el 50% del puntaje WSS 2.0.</p>
         </div>
         <div class="flow-step">
           <div class="fkey">02 · EN</div>
           <h3>Cifrado</h3>
-          <p>Evalúa el esquema de protección de datos: CCMP, TKIP, WEP o ausencia de cifrado.</p>
+          <p>Evalúa el esquema de protección de datos: CCMP, TKIP, WEP o ausencia de cifrado. Aporta el 50% del puntaje WSS 2.0.</p>
         </div>
         <div class="flow-step">
-          <div class="fkey">Contexto</div>
+          <div class="fkey">03 · EX</div>
           <h3>Exposición</h3>
-          <p>Describe la intensidad de señal observada. No modifica el puntaje ni mide distancia exacta.</p>
+          <p>Describe la intensidad de señal observada (RSSI) como contexto. No modifica el puntaje ni mide distancia o accesibilidad real.</p>
         </div>
         <div class="flow-step">
-          <div class="fkey">Evidencia</div>
-          <h3>Infraestructura</h3>
-          <p>Conserva radios y BSSID para revisión. Su multiplicidad no demuestra un ataque.</p>
+          <div class="fkey">04 · AN</div>
+          <h3>Anomalía</h3>
+          <p>Fuera del modelo WSS 2.0: no se evalúan anomalías de ataque. Varios BSSID bajo un mismo SSID son observaciones de infraestructura, no ataques confirmados.</p>
         </div>
         <div class="flow-step">
-          <div class="fkey">Referencia</div>
-          <h3>Alineación técnica</h3>
+          <div class="fkey">05 · BM</div>
+          <h3>Benchmark</h3>
           <p>Compara con WPA2/WPA3-Personal y CCMP de forma descriptiva, sin modificar el puntaje.</p>
         </div>
       </div>
+      <p class="calc-note">Las cinco tarjetas conservan la presentación del proyecto. Solo AU y EN son métricas ponderadas de WSS 2.0 (50% cada una). EX y BM son contexto; AN no es una métrica vigente ni una capacidad de detección.</p>
     </div>
   </section>
 
@@ -1380,6 +1392,12 @@
           <div class="vector-box">
             <div class="vb-label">Vector WSS</div>
             <div class="vb-value" id="vector-output">WSS:2.0/AU:0.3/EN:0.1</div>
+            <div class="vector-context" aria-live="polite">
+              <div class="vb-label">Contexto separado del vector y del puntaje</div>
+              <div><strong>EX · Exposición:</strong> <span id="vector-exposure">RSSI -45 dBm · Alta</span></div>
+              <div><strong>AN · Anomalía:</strong> No evaluada por WSS 2.0; no se asigna un valor.</div>
+              <div><strong>BM · Benchmark:</strong> <span id="vector-alignment">Alineada (ALIGNED)</span></div>
+            </div>
           </div>
 
           <div class="breakdown">
@@ -1700,6 +1718,8 @@
       rssiTag.textContent = 'Contexto · ' + state.rssi + ' dBm (' + exLabel + ')';
       const alignment = { ALIGNED: 'Alineada', PARTIAL: 'Parcialmente alineada', DEVIANT: 'Desviada' };
       document.getElementById('context-output').textContent = 'Alineación técnica: ' + alignment[bm.label] + ' (no modifica WSS).';
+      document.getElementById('vector-exposure').textContent = 'RSSI ' + state.rssi + ' dBm · ' + ({ ALTA: 'Alta', MEDIA: 'Media', BAJA: 'Baja' })[exLabel];
+      document.getElementById('vector-alignment').textContent = alignment[bm.label] + ' (' + bm.label + ')';
     }
 
     // ---------- Wire up controls ----------

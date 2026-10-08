@@ -82,7 +82,7 @@ def test_index_html_uses_neutral_radio_and_an_labels():
     text = Path("index.html").read_text(encoding="utf-8")
 
     assert "BSSID/radios observadas" not in text
-    assert "AN · Anomalía" not in text
+    assert "No evaluada por WSS 2.0; no se asigna un valor." in text
     assert "radioCountLabel(net)" in text
     assert "anDetailMessage(net)" not in text
 

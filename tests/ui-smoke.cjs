@@ -29,14 +29,28 @@ const assert = require('node:assert/strict');
       } };
     }, fixture);
     await page.setContent(readFileSync(path.join(root, 'index.html'), 'utf8'), { waitUntil: 'domcontentloaded' });
+    assert.deepEqual(await page.locator('.flow .fkey').allTextContents(), ['01 · AU', '02 · EN', '03 · EX', '04 · AN', '05 · BM']);
+    assert.equal(await page.locator('.flow-step').count(), 5);
     for (const [preset, score] of [['e1', '1.0'], ['e2', '2.0'], ['e3', '7.5'], ['e4', '9.5'], ['e5', '10.0']]) {
       await page.locator(`[data-preset="${preset}"]`).click();
       assert.equal(await page.locator('#score-num').textContent(), score);
       assert.match(await page.locator('#vector-output').textContent(), /^WSS:2\.0\/AU:[\d.]+\/EN:[\d.]+$/);
+      const aligned = preset === 'e1' || preset === 'e2';
+      assert.equal(await page.locator('#vector-alignment').textContent(), aligned ? 'Alineada (ALIGNED)' : 'Desviada (DEVIANT)');
     }
     await page.locator('[data-preset="e2"]').click();
+    const originalVector = await page.locator('#vector-output').textContent();
+    const originalContext = await page.locator('#vector-exposure').textContent();
     await page.locator('#rssi-slider').fill('-90');
     assert.equal(await page.locator('#score-num').textContent(), '2.0');
+    assert.equal(await page.locator('#vector-output').textContent(), originalVector);
+    assert.notEqual(await page.locator('#vector-exposure').textContent(), originalContext);
+    assert.equal(await page.locator('#vector-exposure').textContent(), 'RSSI -90 dBm · Baja');
+    if (process.env.WSS_UI_SCREENSHOT_DIR) {
+      await page.locator('#como-funciona').scrollIntoViewIfNeeded();
+      await page.locator('.flow').screenshot({ path: path.join(process.env.WSS_UI_SCREENSHOT_DIR, 'flow-wss2.png'), animations: 'disabled' });
+      await page.locator('.vector-box').screenshot({ path: path.join(process.env.WSS_UI_SCREENSHOT_DIR, 'vector-wss2.png'), animations: 'disabled' });
+    }
     await page.locator('[data-view="view-real"]').click();
     await page.getByRole('button', { name: 'Escanear redes de este equipo', exact: true }).click();
     const toggle = page.locator('.technical-toggle').first();

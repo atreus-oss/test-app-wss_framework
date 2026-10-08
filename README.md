@@ -8,9 +8,9 @@ El proyecto integra captura o importación de parámetros Wi-Fi, normalización,
 
 Esta versión implementa **WSS 2.0** tanto en el motor Python como en la calculadora. El puntaje usa exclusivamente autenticación y cifrado, con pesos 0.50/0.50; la exposición observable y la alineación técnica permanecen como contexto. Los resultados nuevos y los reportes JSON/PDF utilizan el vector `WSS:2.0/AU:<valor>/EN:<valor>` y no generan componentes ponderados EX, AN o BM.
 
-La migración y sus comprobaciones se documentan en [SPRINT_05_RESULTADOS.md](SPRINT_05_RESULTADOS.md). Se verificaron **119 pruebas Python aprobadas**, además de una prueba de interfaz en Edge con datos sintéticos y puente Python simulado. La prueba de interfaz cubre los cinco escenarios de la tesis, independencia respecto de la señal, cierre del informe, Escape, foco, pantalla estrecha y escaneos vacíos o fallidos.
+La migración y sus comprobaciones se documentan en [SPRINT_05_RESULTADOS.md](SPRINT_05_RESULTADOS.md). Se verificaron **119 pruebas Python aprobadas**. La versión del 5 de octubre también superó una prueba de interfaz en Edge con datos sintéticos y puente Python simulado. La prueba de interfaz cubre los cinco escenarios de la tesis, independencia respecto de la señal, cierre del informe, Escape, foco, pantalla estrecha y escaneos vacíos o fallidos. En la actualización visual del 8 de octubre se ampliaron las comprobaciones de las tarjetas y del contexto del vector, pero su ejecución en navegador quedó bloqueada por el entorno; sí se repitieron las 119 pruebas Python y se verificó la sintaxis JavaScript.
 
-La tesis informa 99 pruebas de una versión previa identificada como `sprint-05-wss-v2-au-en`. Ese registro histórico es distinto de las 119 pruebas de esta implementación. La validación física, organizacional y PRE/POST conserva el estado pendiente descrito por el libro; esta actualización no genera evidencia experimental de campo.
+La nueva versión de la tesis, revisada el 8 de octubre de 2026, documenta cuatro capturas físicas históricas reprocesadas con WSS 2.0. Esta revisión no repitió esos experimentos ni verificó sus artefactos originales. El caso organizacional y los resultados PRE/POST siguen pendientes. Las 119 pruebas locales son verificaciones de software independientes de esa evidencia experimental.
 
 ## Propósito y alcance
 
@@ -50,7 +50,7 @@ WSS = 10 × (0.50 × AU + 0.50 × EN)
 
 Con estas tablas, las configuraciones evaluables producen puntajes entre **1.0 y 10.0**. Los coeficientes son heurísticos, definidos por los autores para ordenar la severidad relativa; no son probabilidades de ataque ni porcentajes de vulnerabilidad.
 
-La ponderación 50/50 es una decisión metodológica ante la falta de evidencia empírica suficiente para asignar mayor peso a uno de los componentes. La tesis prevé un análisis de sensibilidad con pesos AU/EN de 40/60, 50/50 y 60/40; sus resultados no están presentados en el documento revisado.
+La ponderación 50/50 es una decisión metodológica ante la falta de evidencia empírica suficiente para asignar mayor peso a uno de los componentes. La tesis vigente mantiene los pesos AU/EN en 50/50 y examina la sensibilidad variando los valores normalizados: un incremento de 0.2 en uno de los componentes, manteniendo el otro constante, eleva WSS en 1.0.
 
 ### Clasificación
 
@@ -73,7 +73,7 @@ Los umbrales y coeficientes pertenecen a esta investigación. CVSS es una refere
 | Red abierta, OPEN/NONE | 1.0 | 1.0 | 10.0 | Crítico |
 | WEP teórico, OPEN/WEP | 1.0 | 0.9 | 9.5 | Crítico |
 
-Son resultados determinísticos derivados de la fórmula 50/50, utilizados como criterios de aceptación. **No son mediciones experimentales obtenidas en la organización.** WEP se mantiene como caso teórico por falta de infraestructura para reproducirlo físicamente.
+Son resultados determinísticos derivados de la fórmula 50/50, utilizados como criterios de aceptación. **No son mediciones experimentales obtenidas en la organización.** La tesis también informa coincidencia entre valores esperados y obtenidos al reprocesar cuatro capturas físicas históricas de laboratorio; esa evidencia es distinta de esta tabla matemática. WEP se mantiene como caso teórico por falta de infraestructura para reproducirlo físicamente.
 
 ### Información contextual
 
@@ -82,6 +82,8 @@ En WSS 2.0, los siguientes datos explican el entorno y preservan trazabilidad si
 - **Exposición observable:** señal porcentual y aproximación `RSSI ≈ -100 + Q/2 dBm`, donde Q es el porcentaje informado por Windows. No representa distancia exacta ni una vulnerabilidad por sí misma.
 - **Alineación con la referencia técnica:** alineada para WPA3-Personal o WPA2-Personal con CCMP; parcialmente alineada para CCMP con autenticación fuera de esa referencia; desviada para cifrado obsoleto o ausente. No equivale a certificación de cumplimiento.
 - **Infraestructura:** SSID, BSSID, banda, canal, tipo de radio y MFP cuando esté disponible. Varios BSSID bajo el mismo SSID pueden corresponder a doble banda, mesh, repetidores o varios puntos de acceso.
+
+La interfaz conserva cinco tarjetas identificadas como AU, EN, EX, AN y BM. Solo AU y EN participan en el cálculo; EX y BM se explican como contexto y AN indica explícitamente que la aplicación no evalúa anomalías de ataque. La caja visual mantiene el contexto separado del vector.
 
 El vector final contiene exclusivamente AU y EN. No incluye AN, E-AN, EX ponderado ni BM ponderado. Esta separación se mantiene en el motor, la calculadora y los reportes.
 
@@ -191,19 +193,18 @@ Las observaciones ocultas válidas se conservan y se presentan individualmente. 
 
 El informe técnico se cierra con **Cerrar informe** o **Escape**, y devuelve el foco al botón que lo abrió. Su encabezado permanece accesible al desplazar el contenido.
 
-| Evidencia | Estado según el documento de tesis revisado |
+| Evidencia | Estado según la tesis revisada el 8 de octubre de 2026 |
 |---|---|
-| Pruebas de `sprint-05-wss-v2-au-en` | Se informan 99 pruebas aprobadas; requieren vinculación con el código y registro de ejecución de esa versión |
-| Escenarios físicos WPA3/CCMP, WPA2/CCMP, WPA/TKIP y red abierta | Evidencias finales de configuración, capturas y reportes pendientes de incorporación documental |
-| WEP | Caso teórico; no se afirma prueba física |
-| Doble banda | Prueba funcional de agrupamiento; evidencia final prevista en anexos |
-| Sensibilidad de ponderaciones | Procedimiento 40/60, 50/50 y 60/40 definido; resultados no presentados |
-| Aplicación organizacional | Pendiente de incorporación documental final con autorización y evidencia |
-| Comprensión y utilidad PRE/POST | Aplicación, procesamiento y resultados pendientes |
+| Escenarios WPA3/CCMP, WPA2/CCMP, WPA v1/TKIP y OPEN/NONE | El libro documenta cuatro capturas físicas históricas reprocesadas, resultados coincidentes, reportes y hashes SHA-256 en el Anexo H; artefactos originales no revalidados en esta revisión |
+| WEP | Exclusivamente teórico; puntaje matemático 9.5, sin resultado físico |
+| Doble banda | Comprobación funcional adicional; no inferir ataques por múltiples BSSID |
+| Sensibilidad | Pesos fijos 50/50: variar AU o EN en 0.2 produce un cambio de 1.0 en el puntaje |
+| Caso organizacional en Asunción | Pendiente de cierre con evidencia propia, separado del laboratorio |
+| PRE/POST | Instrumentos transcritos; exportaciones de respuestas y resultados pendientes |
 
-El componente con usuarios prevé invitar a **10 colaboradores**, con participación voluntaria y respuestas vinculadas mediante códigos **P01-P10**, sin solicitar nombres ni correos. Se trata de datos codificados o seudonimizados, no de anonimato absoluto.
+La muestra humana prevista es no probabilística por conveniencia, de **hasta 10 participantes**, aproximadamente **4 colaboradores de la organización y 6 externos**. Las cantidades son planificadas, no participaciones obtenidas.
 
-El análisis previsto utiliza frecuencias, porcentajes, distribución de respuestas y, para escalas ordinales, mediana cuando corresponda. La comparación PRE/POST describe mejora, estabilidad o disminución por participante y compara respuestas correctas en una pregunta objetiva. No se construye un puntaje global de comprensión como escala validada. El diseño no tiene grupo control y no permite afirmar causalidad ni generalizar estadísticamente a otras organizaciones.
+El PRE explora necesidad percibida antes de presentar la aplicación; el POST evalúa comprensión, claridad, recomendaciones y utilidad. Se analizan por separado con frecuencias, porcentajes y, cuando corresponda, mediana o moda. La comparación se limita a dimensiones relacionadas y declara los denominadores efectivos. No equivale a una prueba pareada de aprendizaje ni permite inferencia causal o generalización estadística.
 
 Las pruebas del software, los valores matemáticos esperados y las mediciones con participantes son evidencias diferentes. No deben publicarse porcentajes de mejora ni conclusiones de utilidad hasta disponer de datos reales.
 
@@ -220,6 +221,6 @@ El resultado se genera en `dist/WSS-Framework.exe`. Debe comprobarse su arranque
 
 ## Referencia académica
 
-Este README toma como referencia el documento de tesis de Cabrera Oviedo y Ferreira Cardozo, con fecha de portada febrero de 2026: objetivos y alcance en el capítulo I; definición del modelo en el capítulo II; normalización, evolución, fórmula, sensibilidad y validación en las secciones 4.5 a 4.15; estado de los resultados en las secciones 5.1 a 5.10; conclusiones y evidencias pendientes en los capítulos finales y anexos.
+Este README toma como referencia el documento de tesis de Cabrera Oviedo y Ferreira Cardozo, con fecha de portada febrero de 2026: objetivos y alcance en el capítulo I; definición del modelo en el capítulo II; arquitectura, fórmula, escenarios y análisis en las secciones 4.5 a 4.9; resultados y limitaciones en las secciones 5.1 a 5.6; conclusiones y evidencias pendientes en los capítulos finales y anexos.
 
 La coherencia documental exige distinguir severidad técnica de riesgo organizacional, modelo final de implementación publicada y resultados verificados de validaciones pendientes.
